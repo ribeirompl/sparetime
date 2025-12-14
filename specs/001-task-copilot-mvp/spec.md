@@ -17,8 +17,8 @@ As a busy person with limited free time, I need to quickly capture tasks (both o
 
 **Acceptance Scenarios**:
 
-1. **Given** I open the app for the first time, **When** I tap "Add Task", **Then** I see a form with fields for task name, type (one-off/recurring/project), time estimate, and optional notes
-2. **Given** I'm adding a recurring task, **When** I select "recurring" type, **Then** I see additional fields for interval pattern (e.g., "every 3 days", "every week") and last completed date (defaults to today's date)
+1. **Given** I open the app for the first time, **When** I tap "Add Task", **Then** I see a form with fields for task name, type (one-off/recurring/project), time estimate (minutes), effort level (low/medium/high), location (home/outside/anywhere), priority (defaults to 5), and optional notes
+2. **Given** I'm adding a recurring task, **When** I select "recurring" type, **Then** I see additional fields for interval pattern (e.g., "every 3 hours", "every 5 days", "every 2 weeks", "every 1 month", "every 1 year") and last completed date (defaults to today's date)
 3. **Given** I'm adding a personal project, **When** I select "project" type, **Then** I can specify minimum session duration (the only mandatory field for projects), allowing work to be broken into repeatable chunks until the project is marked complete
 4. **Given** I've added multiple tasks, **When** I go offline and return to the app, **Then** all my tasks are still visible and editable
 5. **Given** I have an existing task, **When** I edit its time estimate or details, **Then** changes are saved immediately to IndexedDB
@@ -48,18 +48,18 @@ As someone with unpredictable free time, I need to tell the system how much time
 
 ### User Story 3 - Add Context Filters for Better Suggestions (Priority: P2)
 
-As a user with varying energy levels and locations throughout the day, I want to optionally provide context (energy level, location) when declaring time so that suggestions are more relevant to my current situation.
+As a user with varying effort capacity throughout the day, I want to optionally provide context filters (effort level, location) when declaring time so that suggestions match my current capacity and situation.
 
 **Why this priority**: Enhances suggestion quality but not essential for MVP. US1+US2 provide core value; context filtering is an enhancement.
 
-**Independent Test**: Add context tags to tasks (e.g., "requires focus", "home only", "errands"). When requesting suggestions with context filters (e.g., "low energy" or "at home"), verify only matching tasks appear.
+**Independent Test**: Create tasks with different effort levels and locations. When requesting suggestions with context filters (e.g., "low effort" or "at home"), verify only matching tasks appear.
 
 **Acceptance Scenarios**:
 
-1. **Given** I'm adding or editing a task, **When** I access task details, **Then** I can tag it with energy level (low/medium/high) and location (home/outside/anywhere)
-2. **Given** I'm declaring available time, **When** I optionally specify "low energy" as context, **Then** suggestions prioritize tasks tagged as low-energy or untagged
-3. **Given** I specify "outside errands" as location context, **When** I request suggestions, **Then** only tasks tagged as "outside" or "anywhere" appear
-4. **Given** multiple context filters are applied, **When** generating suggestions, **Then** tasks matching all filters are ranked higher than partial matches
+1. **Given** I'm declaring available time, **When** I optionally specify "low effort" as context filter, **Then** suggestions only include tasks with low effort level
+2. **Given** I specify "home" as location context filter, **When** I request suggestions, **Then** only tasks with location "home" or "anywhere" appear
+3. **Given** I specify both "low effort" and "outside" location filters, **When** I request suggestions, **Then** only tasks matching both criteria appear
+4. **Given** multiple context filters are applied, **When** generating suggestions, **Then** tasks matching all filters are ranked by urgency and other scoring factors
 
 ---
 
@@ -110,7 +110,7 @@ As a user who values data safety and cross-device access, I want to optionally e
 - **Recurring task completion during interval**: If user completes a recurring task early (before due), next due date calculates from completion time, not original due date
 - **Project session interruption**: If user abandons a project mid-session, it remains available for next time-based suggestion without penalty
 - **Very long time declarations**: If user declares excessive time (e.g., "8 hours"), system suggests project sessions and multiple tasks in sequence
-- **Negative time estimates**: System validation prevents negative, zero, or above 8 hours time estimates; defaults to 15 minutes if invalid input
+- **Invalid time estimates**: UI prevents entry of negative, zero, or above 480 minutes (8 hours) time estimates; API validation returns error if invalid values bypass UI
 - **Circular dependencies**: System prevents circular task dependencies (A depends on B, B depends on A) during task creation/editing, showing validation error
 - **Dependency chain completion**: When Task A (with dependencies B→C→D) is completed, all dependent tasks in the chain become available for suggestions
 - **Dependency on deleted task**: If a task's dependency is deleted, the dependent task becomes immediately available (dependency is removed automatically)
@@ -122,23 +122,26 @@ As a user who values data safety and cross-device access, I want to optionally e
 - Q: How should scoring model factors (urgency, deadlines, priority, etc.) be weighted when ranking suggestions? → A: Equal weighting with urgency as tiebreaker when scores are close
 - Q: What is the decay curve shape for urgency increase in recurring tasks? → A: Linear growth (urgency increases proportionally to days overdue, and decreases proportionally for tasks not yet due)
 - Q: What should the system display when fewer than 3 tasks match criteria? → A: Show all available matches (1-2 tasks) without padding or special messaging
-- Q: What is the maximum allowed time estimate for a single task or session? → A: 8 hours (full work day maximum), defaulting to 15 minutes for invalid inputs
+- Q: What is the maximum allowed time estimate for a single task or session? → A: 480 minutes (8 hours), with UI validation preventing invalid entry and API returning errors
 - Q: How should OAuth tokens be stored to prevent unauthorized access? → A: IndexedDB with Web Crypto API encryption using device-derived key
+- Q: What units should recurring intervals support? → A: Hours, days, weeks, months, and years (intervalValue 1-999)
+- Q: Should effort and location be optional or mandatory? → A: Mandatory on all tasks; priority defaults to 5 if not specified
+- Q: Should invalid inputs have defaults? → A: No - UI prevents invalid entry, API returns validation errors
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: System MUST allow users to create tasks with mandatory fields: name, type (one-off/recurring/project), and time estimate
-- **FR-002**: System MUST support recurring tasks with flexible interval patterns (e.g., "every N days/weeks") rather than fixed calendar dates
+- **FR-001**: System MUST allow users to create tasks with mandatory fields: name, type (one-off/recurring/project), time estimate (1-480 minutes), effort level (low/medium/high), and location (home/outside/anywhere)
+- **FR-002**: System MUST support recurring tasks with flexible interval patterns (e.g., "every N hours/days/weeks/months/years") rather than fixed calendar dates
 - **FR-002a**: System MUST allow users to specify last completed date when creating recurring tasks, defaulting to today's date
-- **FR-003**: System MUST allow personal projects to specify minimum session duration (the only mandatory project-specific field), enabling repeatable work sessions until the project is marked complete
+- **FR-003**: System MUST allow personal projects to specify minimum session duration in minutes (the only mandatory project-specific field), enabling repeatable work sessions until the project is marked complete
 - **FR-004**: System MUST persist all task data in IndexedDB as the authoritative source of truth
 - **FR-005**: System MUST generate task suggestions based on user-declared available time, returning only tasks that fit within the time window
-- **FR-006**: System MUST rank task suggestions using a scoring model that considers urgency, deadlines, priority, postponement history, estimated effort, and energy requirements with equal weighting, using urgency as tiebreaker when scores are close
+- **FR-006**: System MUST rank task suggestions using a scoring model that considers urgency, deadlines, priority (if set), postponement history, time estimate fit, and effort level match with equal weighting, using urgency as tiebreaker when scores are close
 - **FR-007**: System MUST allow users to mark tasks as complete, removing them from future suggestions
 - **FR-008**: System MUST implement a urgency decay model where recurring tasks become more urgent over time using linear growth (urgency increases proportionally to days overdue, and decreases proportionally for tasks not yet due)
-- **FR-009**: System MUST support context tags on tasks (energy level, location) and optional context filters when requesting suggestions
+- **FR-009**: System MUST require effort level and location on all tasks, and support optional context filters (effort, location) when requesting suggestions
 - **FR-010**: System MUST work fully offline after initial load, with no dependency on network connectivity for core functionality
 - **FR-011**: System MUST support optional Google Drive backup via OAuth, storing task data as JSON in private app data folder
 - **FR-012**: System MUST queue local changes and sync to Google Drive automatically when connectivity is restored (if backup enabled)
@@ -146,7 +149,7 @@ As a user who values data safety and cross-device access, I want to optionally e
 - **FR-014**: System MUST allow users to delete all local data with a single action
 - **FR-015**: System MUST provide clear online/offline status indicators and sync state (if backup enabled)
 - **FR-016**: System MUST handle sync conflicts by using last-modified timestamp to determine newest version
-- **FR-017**: System MUST validate time estimates to prevent invalid inputs (negative, zero, or above 8 hours), defaulting to 15 minutes for invalid values
+- **FR-017**: System MUST validate time estimates (1-480 minutes) and return validation errors for invalid inputs, with UI preventing invalid entry
 - **FR-018**: System MUST provide explainable suggestions, showing why each task was recommended (e.g., "overdue by 2 days", "fits your 30-minute window", "high priority")
 - **FR-019**: System MUST allow users to specify that a task depends on another task being completed first
 - **FR-020**: System MUST exclude tasks with incomplete dependencies from suggestion results
@@ -159,25 +162,26 @@ As a user who values data safety and cross-device access, I want to optionally e
   - ID (unique identifier)
   - Name/description
   - Type (one-off, recurring, project)
-  - Time estimate (minutes)
+  - Time estimate in minutes (1-480, mandatory)
+  - Effort level (low/medium/high, mandatory)
+  - Location (home/outside/anywhere, mandatory)
+  - Priority level (0-10, defaults to 5)
+  - Deadline (optional)
   - Created date, last modified date
   - Status (active, completed, archived)
-  - Priority level
-  - Deadline
-  - Context tags (energy level (easy, medium, hard), location)
-  - Relationships: For recurring tasks (interval pattern, last completed date, next due date); For projects (minimum session duration only - no total duration tracked, project marked complete when fully done)
+  - Relationships: For recurring tasks (interval pattern with hours/days/weeks/months/years units, last completed date, next due date); For projects (minimum session duration in minutes only - no total duration tracked, project marked complete when fully done)
   - Dependencies: Optional reference to another Task ID that must be completed before this task appears in suggestions
 
 - **Recurring Pattern**: Defines repetition rules for recurring tasks:
-  - Interval value and unit (e.g., 3 days, 1 week)
+  - Interval value (1-999) and unit (hours, days, weeks, months, years)
   - Urgency decay rate (how fast urgency increases when overdue)
   - Last completion timestamp
   - Next due calculation logic
 
 - **Suggestion Session**: Represents a user query for task recommendations:
   - Timestamp
-  - Available time declared
-  - Optional context filters (energy, location)
+  - Available time declared in minutes
+  - Optional context filters (effort level, location)
   - Generated suggestions (list of Task IDs with scores)
   - User action taken (task selected, dismissed, postponed)
 
