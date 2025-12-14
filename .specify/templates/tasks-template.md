@@ -20,26 +20,27 @@ description: "Task list template for feature implementation"
 
 ## Path Conventions
 
+- **PWA client-only**: `src/`, `public/`, `tests/` at repository root (no backend)
 - **Single project**: `src/`, `tests/` at repository root
 - **Web app**: `backend/src/`, `frontend/src/`
 - **Mobile**: `api/src/`, `ios/src/` or `android/src/`
 - Paths shown below assume single project - adjust based on plan.md structure
 
-<!-- 
+<!--
   ============================================================================
   IMPORTANT: The tasks below are SAMPLE TASKS for illustration purposes only.
-  
+
   The /speckit.tasks command MUST replace these with actual tasks based on:
   - User stories from spec.md (with their priorities P1, P2, P3...)
   - Feature requirements from plan.md
   - Entities from data-model.md
   - Endpoints from contracts/
-  
+
   Tasks MUST be organized by user story so each story can be:
   - Implemented independently
   - Tested independently
   - Delivered as an MVP increment
-  
+
   DO NOT keep these sample tasks in the generated tasks.md file.
   ============================================================================
 -->
@@ -62,6 +63,15 @@ description: "Task list template for feature implementation"
 
 Examples of foundational tasks (adjust based on your project):
 
+**For PWA projects**:
+- [ ] T004 Setup IndexedDB schema with Dexie.js and version migrations
+- [ ] T005 [P] Configure Service Worker with Workbox cache strategies
+- [ ] T006 [P] Create PWA manifest with icons and display settings
+- [ ] T007 [P] Setup Google Drive OAuth and sync service (if backup enabled)
+- [ ] T008 Configure offline detection and sync status UI
+- [ ] T009 Setup build pipeline for Service Worker versioning
+
+**For backend projects**:
 - [ ] T004 Setup database schema and migrations framework
 - [ ] T005 [P] Implement authentication/authorization framework
 - [ ] T006 [P] Setup API routing and middleware structure
