@@ -7,7 +7,7 @@
 
 ## Summary
 
-Build a mobile-first PWA task copilot that helps users manage home chores and personal projects with time-based suggestions. The system stores tasks (one-off, recurring with hours/days/weeks/months/years intervals, or multi-session projects) with time estimates (1-480 minutes), effort levels (low/medium/high), and locations (home/outside/anywhere) in IndexedDB, then generates 3-5 ranked suggestions when users declare available time. Core MVP includes task CRUD operations with mandatory effort/location fields and suggestion engine working fully offline. Optional enhancements include context filtering by effort/location, urgency decay for recurring tasks, and Google Drive backup via OAuth.
+Build a mobile-first PWA task copilot that helps users manage home chores and personal projects with time-based suggestions. The system stores tasks (one-off, recurring with days/weeks/months/years intervals, or multi-session projects) with time estimates (1-480 minutes), effort levels (low/medium/high), and locations (home/outside/anywhere) in IndexedDB, then generates 3-5 ranked suggestions when users declare available time. Core MVP includes task CRUD operations with mandatory effort/location fields and suggestion engine working fully offline. Optional enhancements include context filtering by effort/location, urgency tracking for recurring tasks, and Google Drive backup via OAuth.
 
 ## Technical Context
 
