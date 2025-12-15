@@ -18,7 +18,7 @@ As a busy person with limited free time, I need to quickly capture tasks (both o
 **Acceptance Scenarios**:
 
 1. **Given** I open the app for the first time, **When** I tap "Add Task", **Then** I see a form with fields for task name, type (one-off/recurring/project), time estimate (minutes), effort level (low/medium/high), location (home/outside/anywhere), priority (defaults to 5), and optional notes
-2. **Given** I'm adding a recurring task, **When** I select "recurring" type, **Then** I see additional fields for interval pattern (e.g., "every 3 hours", "every 5 days", "every 2 weeks", "every 1 month", "every 1 year") and last completed date (defaults to today's date)
+2. **Given** I'm adding a recurring task, **When** I select "recurring" type, **Then** I see additional fields for interval pattern (e.g., "every 5 days", "every 2 weeks", "every 1 month", "every 1 year") and last completed date (defaults to today's date)
 3. **Given** I'm adding a personal project, **When** I select "project" type, **Then** I can specify minimum session duration (the only mandatory field for projects), allowing work to be broken into repeatable chunks until the project is marked complete
 4. **Given** I've added multiple tasks, **When** I go offline and return to the app, **Then** all my tasks are still visible and editable
 5. **Given** I have an existing task, **When** I edit its time estimate or details, **Then** changes are saved immediately to IndexedDB
@@ -43,6 +43,7 @@ As someone with unpredictable free time, I need to tell the system how much time
 5. **Given** I have no tasks that fit my available time, **When** I request suggestions, **Then** I see a message like "No tasks fit in 30 minutes. Try 45+ minutes or break projects into smaller sessions"
 6. **Given** Task B depends on Task A being completed, **When** I request suggestions and Task A is not yet complete, **Then** Task B does not appear in suggestions
 7. **Given** Task B depends on Task A, **When** I mark Task A as complete and request suggestions, **Then** Task B becomes available and can appear in suggestions
+8. **Given** I declare "8 hours" available time, **When** I request suggestions, **Then** system returns up to 5 suggestions prioritizing project sessions and tasks that fit the full window, with message "You have time for multiple tasks - complete one and request new suggestions"
 
 ---
 
@@ -63,7 +64,7 @@ As a user with varying effort capacity throughout the day, I want to optionally 
 
 ---
 
-### User Story 4 - Track Urgency with Decay (Priority: P2)
+### User Story 4 - Track Urgency Over Time (Priority: P2)
 
 As a user managing recurring chores, I want overdue tasks to naturally become more urgent over time so that I can see which tasks need attention most without manual prioritization.
 
@@ -113,7 +114,7 @@ As a user who values data safety and cross-device access, I want to optionally e
 - **Invalid time estimates**: UI prevents entry of negative, zero, or above 480 minutes (8 hours) time estimates; API validation returns error if invalid values bypass UI
 - **Circular dependencies**: System prevents circular task dependencies (A depends on B, B depends on A) during task creation/editing, showing validation error
 - **Dependency chain completion**: When Task A (with dependencies B→C→D) is completed, all dependent tasks in the chain become available for suggestions
-- **Dependency on deleted task**: If a task's dependency is deleted, the dependent task becomes immediately available (dependency is removed automatically)
+- **Dependency on deleted task**: If a task's dependency is deleted, the dependent task becomes immediately available (dependency is removed automatically). For multi-level chains (A→B→C), if B is deleted, A's dependency is removed and A becomes available; C's dependency remains on B (which no longer exists) so C also becomes available
 
 ## Clarifications
 
@@ -124,7 +125,7 @@ As a user who values data safety and cross-device access, I want to optionally e
 - Q: What should the system display when fewer than 3 tasks match criteria? → A: Show all available matches (1-2 tasks) without padding or special messaging
 - Q: What is the maximum allowed time estimate for a single task or session? → A: 480 minutes (8 hours), with UI validation preventing invalid entry and API returning errors
 - Q: How should OAuth tokens be stored to prevent unauthorized access? → A: IndexedDB with Web Crypto API encryption using device-derived key
-- Q: What units should recurring intervals support? → A: Hours, days, weeks, months, and years (intervalValue 1-999)
+- Q: What units should recurring intervals support? → A: Days, weeks, months, and years (intervalValue 1-999)
 - Q: Should effort and location be optional or mandatory? → A: Mandatory on all tasks; priority defaults to 5 if not specified
 - Q: Should invalid inputs have defaults? → A: No - UI prevents invalid entry, API returns validation errors
 
@@ -133,23 +134,23 @@ As a user who values data safety and cross-device access, I want to optionally e
 ### Functional Requirements
 
 - **FR-001**: System MUST allow users to create tasks with mandatory fields: name, type (one-off/recurring/project), time estimate (1-480 minutes), effort level (low/medium/high), and location (home/outside/anywhere)
-- **FR-002**: System MUST support recurring tasks with flexible interval patterns (e.g., "every N hours/days/weeks/months/years") rather than fixed calendar dates
-- **FR-002a**: System MUST allow users to specify last completed date when creating recurring tasks, defaulting to today's date
+- **FR-002**: System MUST support recurring tasks with flexible interval patterns (e.g., "every N days/weeks/months/years") rather than fixed calendar dates
+- **FR-002a**: System MUST allow users to specify last completed date (date only, no time component) when creating recurring tasks, defaulting to today's date
 - **FR-003**: System MUST allow personal projects to specify minimum session duration in minutes (the only mandatory project-specific field), enabling repeatable work sessions until the project is marked complete
 - **FR-004**: System MUST persist all task data in IndexedDB as the authoritative source of truth
 - **FR-005**: System MUST generate task suggestions based on user-declared available time, returning only tasks that fit within the time window
-- **FR-006**: System MUST rank task suggestions using a scoring model that considers urgency, deadlines, priority (if set), postponement history, time estimate fit, and effort level match with equal weighting, using urgency as tiebreaker when scores are close
+- **FR-006**: System MUST rank task suggestions using a scoring model that considers urgency, deadlines, priority (defaults to 5), postponement history, time estimate fit, and effort level match with equal weighting, using urgency as tiebreaker when scores are close. When context filters (effort/location) are provided, they contribute to scoring; when omitted, those factors are excluded from the average calculation
 - **FR-007**: System MUST allow users to mark tasks as complete, removing them from future suggestions
-- **FR-008**: System MUST implement a urgency decay model where recurring tasks become more urgent over time using linear growth (urgency increases proportionally to days overdue, and decreases proportionally for tasks not yet due)
+- **FR-008**: System MUST implement a urgency tracking model where recurring tasks become more urgent over time using linear calculation: `urgency = daysOverdue` (positive for overdue tasks, negative for future tasks). For example, a task 2 days overdue has urgency=2, a task due in 3 days has urgency=-3
 - **FR-009**: System MUST require effort level and location on all tasks, and support optional context filters (effort, location) when requesting suggestions
 - **FR-010**: System MUST work fully offline after initial load, with no dependency on network connectivity for core functionality
 - **FR-011**: System MUST support optional Google Drive backup via OAuth, storing task data as JSON in private app data folder
 - **FR-012**: System MUST queue local changes and sync to Google Drive automatically when connectivity is restored (if backup enabled)
 - **FR-013**: System MUST allow users to export all task data as JSON at any time for portability
 - **FR-014**: System MUST allow users to delete all local data with a single action
-- **FR-015**: System MUST provide clear online/offline status indicators and sync state (if backup enabled)
+- **FR-015**: System MUST provide clear sync status indicators showing whether changes are backed up to Google Drive (if backup enabled) and when last sync occurred
 - **FR-016**: System MUST handle sync conflicts by using last-modified timestamp to determine newest version
-- **FR-017**: System MUST validate time estimates (1-480 minutes) and return validation errors for invalid inputs, with UI preventing invalid entry
+- **FR-017**: System MUST validate time estimates (1-480 minutes) at the application layer (store/service validation) and return validation errors for invalid inputs, with UI preventing invalid entry
 - **FR-018**: System MUST provide explainable suggestions, showing why each task was recommended (e.g., "overdue by 2 days", "fits your 30-minute window", "high priority")
 - **FR-019**: System MUST allow users to specify that a task depends on another task being completed first
 - **FR-020**: System MUST exclude tasks with incomplete dependencies from suggestion results
@@ -173,7 +174,7 @@ As a user who values data safety and cross-device access, I want to optionally e
   - Dependencies: Optional reference to another Task ID that must be completed before this task appears in suggestions
 
 - **Recurring Pattern**: Defines repetition rules for recurring tasks:
-  - Interval value (1-999) and unit (hours, days, weeks, months, years)
+  - Interval value (1-999) and unit (days, weeks, months, years)
   - Urgency decay rate (how fast urgency increases when overdue)
   - Last completion timestamp
   - Next due calculation logic
