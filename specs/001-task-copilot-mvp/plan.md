@@ -11,14 +11,14 @@ Build a mobile-first PWA task copilot that helps users manage home chores and pe
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.9+ with ES2022+ features, strict mode enabled  
-**Primary Dependencies**: Vue 3.5+ (Composition API), Dexie.js 4.x (IndexedDB wrapper), Vite 7.x (build tool), Vite PWA Plugin 1.x (service worker generation), Pinia 3.x (state management), Vue Router 4.6+ (routing), date-fns 4.x (date calculations), Tailwind CSS 4.x (styling), Headless UI 1.7+ (accessible components)  
-**Storage**: IndexedDB via Dexie.js (primary source of truth), Google Drive API with OAuth 2.0 for optional backup  
-**Testing**: Vitest 4.x (unit/integration), Playwright 1.57+ (E2E PWA testing including offline scenarios)  
-**Target Platform**: PWA installable on iOS Safari 15+, Android Chrome 90+, Desktop Chrome/Edge/Firefox latest  
-**Project Type**: pwa-client-only (no backend, fully client-side)  
-**Performance Goals**: Lighthouse ≥90 all categories, First Contentful Paint <1.5s, Time to Interactive <3.5s, Largest Contentful Paint <2.5s  
-**Constraints**: Total JS bundle <200KB gzipped, offline-capable after initial load, touch targets ≥44x44px, Web Crypto API encryption for OAuth tokens  
+**Language/Version**: TypeScript 5.9+ with ES2022+ features, strict mode enabled
+**Primary Dependencies**: Vue 3.5+ (Composition API), Dexie.js 4.x (IndexedDB wrapper), Vite 7.x (build tool), Vite PWA Plugin 1.x (service worker generation), Pinia 3.x (state management), Vue Router 4.6+ (routing), date-fns 4.x (date calculations), Tailwind CSS 4.x (styling), Headless UI 1.7+ (accessible components)
+**Storage**: IndexedDB via Dexie.js (primary source of truth), Google Drive API with OAuth 2.0 for optional backup
+**Testing**: Vitest 4.x (unit/integration), Playwright 1.57+ (E2E PWA testing including offline scenarios)
+**Target Platform**: PWA installable on iOS Safari 15+, Android Chrome 90+, Desktop Chrome/Edge/Firefox latest
+**Project Type**: pwa-client-only (no backend, fully client-side)
+**Performance Goals**: Lighthouse ≥90 all categories, First Contentful Paint <1.5s, Time to Interactive <3.5s, Largest Contentful Paint <2.5s
+**Constraints**: Initial JS bundle target ~200KB gzipped; CI should warn if bundle >200KB. App must be offline-capable after initial load, touch targets ≥44x44px, Web Crypto API encryption for OAuth tokens
 **Scale/Scope**: Support up to 10,000 tasks, 5 user stories (2 P1 MVP, 2 P2, 1 P3), ~15-20 Vue components, IndexedDB schema v1 with migration support
 
 ## Constitution Check

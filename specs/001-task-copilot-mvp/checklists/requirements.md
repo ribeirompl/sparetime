@@ -42,7 +42,7 @@
 
 - Zero [NEEDS CLARIFICATION] markers - all requirements are concrete
 - Each functional requirement is testable (e.g., FR-001: can verify task creation with mandatory fields)
-- Success criteria include specific metrics (SC-002: 500ms, SC-011: 200KB, SC-012: 60 seconds)
+ - Success criteria include specific metrics (SC-002: 500ms, SC-011: initial JS bundle target ~200KB gzipped with CI monitoring, SC-012: 60 seconds)
 - All success criteria are technology-agnostic and measurable
 - 5 user stories with comprehensive acceptance scenarios covering all paths
 - 9 edge cases identified with clear handling expectations
