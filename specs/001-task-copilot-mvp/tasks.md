@@ -24,22 +24,23 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create project structure with src/, public/, tests/ directories per plan.md
-- [ ] T002 Initialize Node.js project with package.json (Vue 3.5+, Vite 7.x, TypeScript 5.9+)
-- [ ] T003 [P] Install core dependencies (vue, vue-router, pinia, dexie, date-fns) per plan.md
-- [ ] T004 [P] Install dev dependencies (vite, vite-plugin-pwa, typescript, vitest, playwright) per plan.md
-- [ ] T005 [P] Install styling dependencies (tailwindcss 4.x, @headlessui/vue 1.7+) per plan.md
-- [ ] T006 [P] Configure TypeScript with tsconfig.json (strict mode, ES2022+) per quickstart.md
-- [ ] T007 [P] Configure Vite in vite.config.ts with Vue plugin and path aliases
-- [ ] T008 [P] Configure Tailwind CSS in tailwind.config.js with mobile-first breakpoints and touch target utilities
-- [ ] T009 [P] Configure ESLint and Prettier for code quality
-- [ ] T010 [P] Create public/icons directory with placeholder icon files (icon-192.png, icon-512.png, icon-maskable.png)
-- [ ] T011 Create src/main.ts entry point with Vue app initialization
-- [ ] T012 Create src/App.vue root component with basic layout structure
-- [ ] T012a [P] Configure Vitest in vitest.config.ts with jsdom environment and coverage settings
-- [ ] T012b [P] Configure Playwright in playwright.config.ts for PWA E2E testing (chromium, firefox, webkit)
-- [ ] T012c [P] Create tests/unit/, tests/integration/, tests/e2e/ directory structure
-- [ ] T012d [P] Add test scripts to package.json (test, test:unit, test:integration, test:e2e, test:coverage)
+- [X] T001 Create project structure with src/, public/, tests/ directories per plan.md
+- [X] T001a Update .gitignore to include common build artifacts and sensitive files (dist/, .env.local, node_modules/, .cache/, coverage/, .DS_Store, .vscode/, .idea/)
+- [X] T002 Initialize Node.js project with package.json (Vue 3.5+, Vite 7.x, TypeScript 5.9+)
+- [X] T003 [P] Install core dependencies (vue, vue-router, pinia, dexie, date-fns) per plan.md
+- [X] T004 [P] Install dev dependencies (vite, vite-plugin-pwa, typescript, vitest, playwright) per plan.md
+- [X] T005 [P] Install styling dependencies (tailwindcss 4.x, @headlessui/vue 1.7+) per plan.md
+- [X] T006 [P] Configure TypeScript with tsconfig.json (strict mode, ES2022+) per quickstart.md
+- [X] T007 [P] Configure Vite in vite.config.ts with Vue plugin and path aliases
+- [X] T008 [P] Configure Tailwind CSS in tailwind.config.js with mobile-first breakpoints and touch target utilities
+- [X] T009 [P] Configure ESLint and Prettier for code quality
+- [X] T010 [P] Create public/icons directory with placeholder icon files (icon-192.png, icon-512.png, icon-maskable.png)
+- [X] T011 Create src/main.ts entry point with Vue app initialization
+- [X] T012 Create src/App.vue root component with basic layout structure
+- [X] T012a [P] Configure Vitest in vitest.config.ts with jsdom environment and coverage settings
+- [X] T012b [P] Configure Playwright in playwright.config.ts for PWA E2E testing (chromium, firefox, webkit)
+- [X] T012c [P] Create tests/unit/, tests/integration/, tests/e2e/ directory structure
+- [X] T012d [P] Add test scripts to package.json (test, test:unit, test:integration, test:e2e, test:coverage)
 
 ---
 
