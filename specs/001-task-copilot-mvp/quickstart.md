@@ -170,7 +170,7 @@ dist/assets/index-a3b2c4d5.js   187.4 kB │ gzip: 62.19 kB ✅ (under 200KB)
 ✓ built in 3.42s
 ```
 
-Verify JS bundle is **under 200KB gzipped** (constitutional requirement).
+Verify JS bundle is within the performance budget (initial JS target ~200KB gzipped; CI warn >200KB).
 
 ## Project Structure Overview
 
@@ -344,7 +344,7 @@ npm install dexie
 2. Test in private browsing mode (different IndexedDB instance)
 3. Check storage quota with `navigator.storage.estimate()`
 
-### Issue: Build exceeds 200KB JS budget
+### Issue: Build exceeds initial JS performance budget (~200KB target)
 
 **Solution**:
 1. Check bundle size: `npm run build` → verify gzipped size
@@ -377,7 +377,7 @@ npm install dexie
 5. **Format code**: `npm run format`
 6. **Type check**: `npm run type-check`
 7. **Test**: `npm run test && npm run test:e2e`
-8. **Build**: `npm run build` → verify <200KB gzipped
+8. **Build**: `npm run build` → verify bundle is within performance budget (target ~200KB gzipped; CI warn >200KB)
 9. **Commit**: Git commit with descriptive message
 10. **Repeat** for next user story
 
@@ -395,7 +395,7 @@ Monitor these metrics during development:
 - First Contentful Paint < 1.5s
 - Time to Interactive < 3.5s
 - Largest Contentful Paint < 2.5s
-- Total JS bundle < 200KB gzipped
+- Total JS bundle target: ~200KB gzipped (CI warns >200KB)
 
 ---
 

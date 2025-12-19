@@ -206,7 +206,7 @@ As a user who values data safety and cross-device access, I want to optionally e
 - **SC-008**: Google Drive backup/restore completes successfully for datasets up to 10,000 tasks
 - **SC-009**: App meets PWA Lighthouse scores ≥90 across all categories (Performance, Accessibility, Best Practices, PWA)
 - **SC-010**: First Contentful Paint occurs in under 1.5 seconds on 4G throttled connection
-- **SC-011**: Total JavaScript bundle size remains under 200KB gzipped
+- **SC-011**: Initial JS bundle target: ~200KB gzipped; CI warns when >200KB (monitor and optimize critical-path payload)
 - **SC-012**: Users successfully complete task addition flow in under 60 seconds (usability benchmark)
 - **SC-013**: Suggestion explanations are displayed for 100% of recommended tasks, providing transparency
 - **SC-014**: IndexedDB storage quota warnings trigger before reaching 80% capacity

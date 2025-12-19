@@ -288,7 +288,7 @@
 - [ ] T108 [P] Create common Input component in src/components/common/Input.vue with validation states
 - [ ] T109 [P] Create common Modal component in src/components/common/Modal.vue using Headless UI Dialog
 - [ ] T110 [P] Add accessibility labels and ARIA attributes to all interactive components
-- [ ] T111 Optimize bundle size (verify <200KB gzipped JS per constitution)
+- [ ] T111 Optimize bundle size (establish performance budget: target ~200KB gzipped initial JS; CI warns >200KB; implement code-splitting, lazy-loading, and monitoring)
 - [ ] T112 Run Lighthouse audit and verify scores ≥90 all categories
 - [ ] T113 Test PWA installation on iOS Safari 15+ and Android Chrome 90+
 - [ ] T114 Test offline functionality after clearing cache and going offline
@@ -297,7 +297,8 @@
 - [ ] T117 [P] Add inline code comments for complex logic (scoring, urgency, crypto)
 - [ ] T118 Run quickstart.md validation (verify all steps work for new developer)
 - [ ] T119 Create sample tasks data for demo/testing purposes
-- [ ] T120 Final code cleanup and refactoring for consistency
+- [ ] T120 Setup GitHub Actions CI/CD pipeline in .github/workflows/ with build/deploy to GitHub Pages, unit tests, linting, TypeScript checks, Lighthouse CI for PWA validation, Dependabot config, security audits, and dependency/build caching
+- [ ] T121 Final code cleanup and refactoring for consistency
 
 ---
 
@@ -461,7 +462,7 @@ With multiple developers after Foundational phase completes:
 
 ## Summary
 
-- **Total Tasks**: 172
+- **Total Tasks**: 173
 - **Setup Phase**: 16 tasks (includes test framework configuration)
 - **Foundational Phase**: 19 tasks (BLOCKS all user stories)
 - **User Story 1 (P1 MVP)**: 29 tasks (12 tests + 17 implementation) - Task CRUD with offline persistence
@@ -469,7 +470,7 @@ With multiple developers after Foundational phase completes:
 - **User Story 3 (P2)**: 17 tasks (9 tests + 8 implementation) - Context filtering for suggestions
 - **User Story 4 (P2)**: 16 tasks (8 tests + 8 implementation) - Urgency tracking
 - **User Story 5 (P3)**: 29 tasks (10 tests + 19 implementation) - Google Drive backup with OAuth
-- **Polish Phase**: 20 tasks - Cross-cutting improvements
+- **Polish Phase**: 21 tasks - Cross-cutting improvements
 
 **Test Coverage**:
 - **Unit Tests (Vitest)**: 22 tests across utils/, services/

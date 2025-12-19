@@ -16,7 +16,7 @@
 - Composition API provides better TypeScript inference than Options API
 - `<script setup>` reduces boilerplate and improves readability
 - Composables pattern enables reusable logic extraction (e.g., `useTasks`, `useSuggestions`)
-- Better tree-shaking support reduces bundle size (critical for <200KB constraint)
+- Better tree-shaking support reduces bundle size (critical for the project's performance budget: target ~200KB gzipped initial JS)
 
 **Alternatives Considered**:
 - Options API: Rejected due to poor TypeScript support and less composable logic
@@ -260,13 +260,14 @@ async function encryptToken(token: string): Promise<EncryptedToken> {
 
 **Rationale**:
 - Tailwind JIT minimizes CSS bundle size (helps meet <14KB critical CSS target)
+- Tailwind JIT minimizes CSS bundle size (helps meet ~14KB critical CSS target)
 - Headless UI provides accessible, unstyled components (dialogs, dropdowns, transitions)
 - Mobile-first breakpoints (sm:, md:, lg:) enforce mobile-first design
 - Touch target utilities ensure ≥44x44px for tap targets
 
 **Alternatives Considered**:
 - Custom CSS: Rejected - increases bundle size and development time
-- Material Design components: Rejected - too heavy for <200KB JS constraint
+- Material Design components: Rejected - too heavy for the initial JS performance budget (~200KB target)
 - Inline styles: Rejected - poor maintainability
 
 **Implementation Pattern**:
@@ -316,7 +317,7 @@ export default {
 **Decision**: Use tree-shakeable imports, focus on core date arithmetic functions
 
 **Rationale**:
-- date-fns is modular and tree-shakeable (helps meet <200KB JS target)
+- date-fns is modular and tree-shakeable (helps meet the initial JS performance budget: target ~200KB gzipped)
 - Provides timezone-safe date manipulation (critical for recurring tasks)
 - Functions needed: `addDays`, `differenceInDays`, `startOfDay`, `isBefore`, `isAfter`, `parseISO`, `formatISO`
 - Avoid moment.js (large bundle) or native Date API (timezone issues)
@@ -369,7 +370,7 @@ function calculateUrgency(task: RecurringTask, now: Date): number {
 
 ## Performance Budget Allocation
 
-Based on <200KB JS constraint:
+Based on the initial JS performance budget (~200KB gzipped):
 
 - **Vue 3 core**: ~50KB gzipped
 - **Vue Router 4**: ~12KB gzipped
@@ -380,7 +381,7 @@ Based on <200KB JS constraint:
 - **Application code**: ~60KB gzipped (available budget)
 - **Buffer**: ~25KB gzipped
 
-**Total**: ~200KB gzipped ✅
+**Total**: ~200KB gzipped (target) ✅
 
 ## Next Steps
 
