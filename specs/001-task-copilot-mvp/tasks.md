@@ -82,38 +82,38 @@
 
 ### Tests for User Story 1 (Write FIRST - must FAIL before implementation) ⚠️
 
-- [ ] T032a [P] [US1] Unit test: validateTask rejects invalid time estimates (<1 or >480 min) in tests/unit/utils/validation.test.ts
-- [ ] T032b [P] [US1] Unit test: validateTask rejects missing mandatory fields (name, type, effort, location) in tests/unit/utils/validation.test.ts
-- [ ] T032c [P] [US1] Unit test: calculateNextDueDate correctly adds days/weeks/months/years in tests/unit/utils/dateHelpers.test.ts
-- [ ] T032d [P] [US1] Unit test: detectCircularDependency returns true for A→B→A chains in tests/unit/utils/validation.test.ts
-- [ ] T032e [P] [US1] Integration test: taskStore.create persists task to IndexedDB in tests/integration/stores/taskStore.test.ts
-- [ ] T032f [P] [US1] Integration test: taskStore.update modifies existing task in IndexedDB in tests/integration/stores/taskStore.test.ts
-- [ ] T032g [P] [US1] Integration test: taskStore.delete removes task from IndexedDB in tests/integration/stores/taskStore.test.ts
-- [ ] T032h [P] [US1] Integration test: recurring task nextDueDate auto-computed on create in tests/integration/stores/taskStore.test.ts
-- [ ] T032i [P] [US1] E2E test: user adds one-off task via form and sees it in list in tests/e2e/tasks.spec.ts
-- [ ] T032j [P] [US1] E2E test: user adds recurring task with interval pattern in tests/e2e/tasks.spec.ts
-- [ ] T032k [P] [US1] E2E test: user edits task and changes persist after page reload in tests/e2e/tasks.spec.ts
-- [ ] T032l [P] [US1] E2E test: tasks persist when app goes offline and returns in tests/e2e/offline.spec.ts
+- [X] T032a [P] [US1] Unit test: validateTask rejects invalid time estimates (<1 or >480 min) in tests/unit/utils/validation.test.ts
+- [X] T032b [P] [US1] Unit test: validateTask rejects missing mandatory fields (name, type, effort, location) in tests/unit/utils/validation.test.ts
+- [X] T032c [P] [US1] Unit test: calculateNextDueDate correctly adds days/weeks/months/years in tests/unit/utils/dateHelpers.test.ts
+- [X] T032d [P] [US1] Unit test: detectCircularDependency returns true for A→B→A chains in tests/unit/utils/validation.test.ts
+- [X] T032e [P] [US1] Integration test: taskStore.create persists task to IndexedDB in tests/integration/stores/taskStore.test.ts
+- [X] T032f [P] [US1] Integration test: taskStore.update modifies existing task in IndexedDB in tests/integration/stores/taskStore.test.ts
+- [X] T032g [P] [US1] Integration test: taskStore.delete removes task from IndexedDB in tests/integration/stores/taskStore.test.ts
+- [X] T032h [P] [US1] Integration test: recurring task nextDueDate auto-computed on create in tests/integration/stores/taskStore.test.ts
+- [X] T032i [P] [US1] E2E test: user adds one-off task via form and sees it in list in tests/e2e/tasks.spec.ts
+- [X] T032j [P] [US1] E2E test: user adds recurring task with interval pattern in tests/e2e/tasks.spec.ts
+- [X] T032k [P] [US1] E2E test: user edits task and changes persist after page reload in tests/e2e/tasks.spec.ts
+- [X] T032l [P] [US1] E2E test: tasks persist when app goes offline and returns in tests/e2e/offline.spec.ts
 
 ### Implementation for User Story 1
 
-- [ ] T032 [P] [US1] Create Task interface implementation in src/db/database.ts with all mandatory fields per data-model.md
-- [ ] T033 [P] [US1] Implement CreateTaskInput and UpdateTaskInput interfaces in src/types/task.ts
-- [ ] T034 [US1] Implement task CRUD operations in src/stores/taskStore.ts (create, read, update, delete, list)
-- [ ] T035 [US1] Add task validation logic in src/stores/taskStore.ts using validateTask utility
-- [ ] T036 [US1] Implement recurring task next due date calculation in src/utils/dateHelpers.ts using date-fns (note: date-fns handles month-end edge cases by rolling to next valid date, e.g., Jan 31 + 1 month = Feb 28/29)
-- [ ] T037 [US1] Implement dependency validation (prevent circular dependencies) in src/utils/validation.ts
-- [ ] T038 [P] [US1] Create TaskForm component in src/components/tasks/TaskForm.vue (name, type, time, effort, location, priority fields)
-- [ ] T039 [P] [US1] Create TaskCard component in src/components/tasks/TaskCard.vue to display task summary
-- [ ] T040 [P] [US1] Create TaskList component in src/components/tasks/TaskList.vue to render multiple TaskCard components
-- [ ] T041 [US1] Implement TasksView in src/views/TasksView.vue with TaskList and "Add Task" button
-- [ ] T042 [US1] Add form fields for recurring pattern (interval value, interval unit, last completed date) in TaskForm.vue
-- [ ] T043 [US1] Add form fields for project session (minimum session duration) in TaskForm.vue
-- [ ] T044 [US1] Add optional dependency selection dropdown in TaskForm.vue to specify dependsOnId
-- [ ] T045 [US1] Implement task editing flow (click task → open TaskForm with existing data → save updates)
-- [ ] T046 [US1] Add offline persistence verification (manual test: go offline, add/edit task, refresh page)
-- [ ] T047 [P] [US1] Style TaskForm with Tailwind CSS mobile-first breakpoints and ≥44x44px touch targets
-- [ ] T048 [P] [US1] Style TaskCard and TaskList with Tailwind CSS for mobile-first display
+- [X] T032 [P] [US1] Create Task interface implementation in src/db/database.ts with all mandatory fields per data-model.md
+- [X] T033 [P] [US1] Implement CreateTaskInput and UpdateTaskInput interfaces in src/types/task.ts
+- [X] T034 [US1] Implement task CRUD operations in src/stores/taskStore.ts (create, read, update, delete, list)
+- [X] T035 [US1] Add task validation logic in src/stores/taskStore.ts using validateTask utility
+- [X] T036 [US1] Implement recurring task next due date calculation in src/utils/dateHelpers.ts using date-fns (note: date-fns handles month-end edge cases by rolling to next valid date, e.g., Jan 31 + 1 month = Feb 28/29)
+- [X] T037 [US1] Implement dependency validation (prevent circular dependencies) in src/utils/validation.ts
+- [X] T038 [P] [US1] Create TaskForm component in src/components/tasks/TaskForm.vue (name, type, time, effort, location, priority fields)
+- [X] T039 [P] [US1] Create TaskCard component in src/components/tasks/TaskCard.vue to display task summary
+- [X] T040 [P] [US1] Create TaskList component in src/components/tasks/TaskList.vue to render multiple TaskCard components
+- [X] T041 [US1] Implement TasksView in src/views/TasksView.vue with TaskList and "Add Task" button
+- [X] T042 [US1] Add form fields for recurring pattern (interval value, interval unit, last completed date) in TaskForm.vue
+- [X] T043 [US1] Add form fields for project session (minimum session duration) in TaskForm.vue
+- [X] T044 [US1] Add optional dependency selection dropdown in TaskForm.vue to specify dependsOnId
+- [X] T045 [US1] Implement task editing flow (click task → open TaskForm with existing data → save updates)
+- [X] T046 [US1] Add offline persistence verification (manual test: go offline, add/edit task, refresh page)
+- [X] T047 [P] [US1] Style TaskForm with Tailwind CSS mobile-first breakpoints and ≥44x44px touch targets
+- [X] T048 [P] [US1] Style TaskCard and TaskList with Tailwind CSS for mobile-first display
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - users can add, edit, and view tasks offline
 

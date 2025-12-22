@@ -85,7 +85,10 @@ export interface Task {
 
   // Project-specific fields
   projectSession?: {
-    minSessionDurationMinutes: number // 1-480 minutes
+    minSessionDurationMinutes: number // 1-480 minutes, MANDATORY for project type
+    // Note: For project tasks, timeEstimateMinutes is set equal to minSessionDurationMinutes
+    // since projects are ongoing and don't have a total completion time.
+    // The suggestion engine uses minSessionDurationMinutes to filter by available time.
   }
 }
 
@@ -315,7 +318,11 @@ export const TaskValidation = {
   projectSession: {
     minSessionDurationMinutes: {
       min: 1, // At least 1 minute
-      max: 480 // 8 hours max
+      max: 480, // 8 hours max
+      required: true // Mandatory for project type tasks
+      // Note: For project tasks, this value is also used as timeEstimateMinutes
+      // since projects are ongoing and the suggestion engine needs to know
+      // the minimum time required for a productive work session
     }
   }
 }
