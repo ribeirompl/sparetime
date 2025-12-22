@@ -2,11 +2,25 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
+import { initializeDatabase } from './db/database'
 import './style.css'
 
-const app = createApp(App)
+// Initialize app
+async function bootstrap() {
+  // Initialize IndexedDB before mounting app
+  try {
+    await initializeDatabase()
+  } catch (error) {
+    console.error('Failed to initialize database:', error)
+    // App will still mount, but database operations may fail
+  }
 
-app.use(createPinia())
-app.use(router)
+  const app = createApp(App)
 
-app.mount('#app')
+  app.use(createPinia())
+  app.use(router)
+
+  app.mount('#app')
+}
+
+bootstrap()

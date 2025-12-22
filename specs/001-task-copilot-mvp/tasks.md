@@ -50,25 +50,25 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T013 Setup IndexedDB schema with Dexie.js in src/db/database.ts (Task, SuggestionSession, SyncState tables)
-- [ ] T014 [P] Define schema version 1 in src/db/schema.ts with compound indexes per data-model.md
-- [ ] T015 [P] Create migration infrastructure in src/db/migrations.ts for future schema versions
-- [ ] T016 [P] Define TypeScript interfaces for Task in src/types/task.ts (TaskType, TaskStatus, EffortLevel, Location)
-- [ ] T017 [P] Define TypeScript interfaces for RecurringPattern and ProjectSession in src/types/task.ts
-- [ ] T018 [P] Define TypeScript interfaces for SuggestionSession in src/types/suggestion.ts (SuggestionContext, TaskScore, SuggestionResult)
-- [ ] T019 [P] Define TypeScript interfaces for SyncState in src/types/sync.ts (EncryptedToken, PendingChange, SyncConflict)
-- [ ] T020 [P] Create validation utilities in src/utils/validation.ts (validateTask per data-model.md rules)
-- [ ] T021 [P] Create date helper utilities in src/utils/dateHelpers.ts (wrappers for date-fns functions)
-- [ ] T022 Configure Vite PWA Plugin in vite.config.ts with generateSW strategy per research.md
-- [ ] T023 [P] Create PWA manifest in public/manifest.json with app metadata per quickstart.md
-- [ ] T024 [P] Configure Service Worker with Workbox cache strategies (NetworkFirst for HTML, CacheFirst for assets) in vite.config.ts
-- [ ] T025 Setup Vue Router in src/router/index.ts with hash mode for PWA compatibility
-- [ ] T026 [P] Create TasksView route placeholder in src/views/TasksView.vue
-- [ ] T027 [P] Create SuggestionsView route placeholder in src/views/SuggestionsView.vue
-- [ ] T028 [P] Create SettingsView route placeholder in src/views/SettingsView.vue
-- [ ] T029 Initialize Pinia store structure in src/stores/taskStore.ts with basic state interface
-- [ ] T030 [P] Initialize Pinia store structure in src/stores/suggestionStore.ts with basic state interface
-- [ ] T031 [P] Initialize Pinia store structure in src/stores/syncStore.ts with basic state interface
+- [X] T013 Setup IndexedDB schema with Dexie.js in src/db/database.ts (Task, SuggestionSession, SyncState tables)
+- [X] T014 [P] Define schema version 1 in src/db/schema.ts with compound indexes per data-model.md
+- [X] T015 [P] Create migration infrastructure in src/db/migrations.ts for future schema versions
+- [X] T016 [P] Define TypeScript interfaces for Task in src/types/task.ts (TaskType, TaskStatus, EffortLevel, Location)
+- [X] T017 [P] Define TypeScript interfaces for RecurringPattern and ProjectSession in src/types/task.ts
+- [X] T018 [P] Define TypeScript interfaces for SuggestionSession in src/types/suggestion.ts (SuggestionContext, TaskScore, SuggestionResult)
+- [X] T019 [P] Define TypeScript interfaces for SyncState in src/types/sync.ts (EncryptedToken, PendingChange, SyncConflict)
+- [X] T020 [P] Create validation utilities in src/utils/validation.ts (validateTask per data-model.md rules)
+- [X] T021 [P] Create date helper utilities in src/utils/dateHelpers.ts (wrappers for date-fns functions)
+- [X] T022 Configure Vite PWA Plugin in vite.config.ts with generateSW strategy per research.md
+- [X] T023 [P] Create PWA manifest in public/manifest.json with app metadata per quickstart.md
+- [X] T024 [P] Configure Service Worker with Workbox cache strategies (NetworkFirst for HTML, CacheFirst for assets) in vite.config.ts
+- [X] T025 Setup Vue Router in src/router/index.ts with hash mode for PWA compatibility
+- [X] T026 [P] Create TasksView route placeholder in src/views/TasksView.vue
+- [X] T027 [P] Create SuggestionsView route placeholder in src/views/SuggestionsView.vue
+- [X] T028 [P] Create SettingsView route placeholder in src/views/SettingsView.vue
+- [X] T029 Initialize Pinia store structure in src/stores/taskStore.ts with basic state interface
+- [X] T030 [P] Initialize Pinia store structure in src/stores/suggestionStore.ts with basic state interface
+- [X] T031 [P] Initialize Pinia store structure in src/stores/syncStore.ts with basic state interface
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
