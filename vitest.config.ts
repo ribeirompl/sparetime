@@ -8,6 +8,7 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     include: ['tests/**/*.{test,spec}.ts'],
+    exclude: ['tests/e2e/**', '**/node_modules/**', '**/.git/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
