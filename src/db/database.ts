@@ -19,25 +19,20 @@ import { SCHEMA_VERSION_1, CURRENT_SCHEMA_VERSION } from './schema'
  * Extends Dexie to provide typed table access
  */
 export class SparetimeDatabase extends Dexie {
-  /** Tasks table */
-  tasks!: Table<Task, number>
+  /** Tasks table - uses string UUID as primary key */
+  tasks!: Table<Task, string>
 
   /** Suggestion sessions table */
   suggestionSessions!: Table<SuggestionSession, number>
 
   /** Sync state table (singleton) */
-  syncState!: Table<SyncState, string>
+  syncState!: Table<SyncState, number>
 
   constructor() {
     super('SparetimeDB')
 
-    // Version 1 - Initial schema
-    this.version(CURRENT_SCHEMA_VERSION).stores(SCHEMA_VERSION_1)
-
-    // Future versions would be added here:
-    // this.version(2).stores(SCHEMA_VERSION_2).upgrade(async tx => {
-    //   await runMigration(2, tx)
-    // })
+    // Version 1 - UUID-based IDs with soft delete support
+    this.version(1).stores(SCHEMA_VERSION_1)
   }
 }
 

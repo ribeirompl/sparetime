@@ -33,7 +33,7 @@ const effortLevel = ref<EffortLevel>('medium')
 const location = ref<Location>('home')
 const priority = ref(5)
 const deadline = ref('')
-const dependsOnId = ref<number | undefined>(undefined)
+const dependsOnId = ref<string | undefined>(undefined)
 
 // Recurring pattern state
 const recurringIntervalValue = ref(1)

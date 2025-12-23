@@ -50,7 +50,7 @@ export interface ScoringFactors {
  */
 export interface TaskScore {
   /** Task ID */
-  taskId: number
+  taskId: string
   /** Full task object */
   task: Task
   /** Overall score (0-1 normalized) */
@@ -84,7 +84,7 @@ export interface SuggestionAction {
   /** Action type */
   type: 'completed' | 'dismissed' | 'postponed'
   /** Task ID action was taken on */
-  taskId?: number
+  taskId?: string
   /** Timestamp of action (ISO date string) */
   timestamp: string
 }
@@ -103,7 +103,7 @@ export interface SuggestionSession {
   contextFilters?: ContextFilters
   /** Generated suggestions with scores */
   suggestions: Array<{
-    taskId: number
+    taskId: string
     score: number
     urgency: number
     reason: string

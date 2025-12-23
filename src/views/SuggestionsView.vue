@@ -40,7 +40,7 @@ async function handleSubmit(input: {
   })
 }
 
-async function handleComplete(taskId: number) {
+async function handleComplete(taskId: string) {
   await taskStore.complete(taskId)
   await suggestionStore.recordAction(taskId, 'completed')
   
@@ -50,7 +50,7 @@ async function handleComplete(taskId: number) {
   }
 }
 
-async function handleDismiss(taskId: number) {
+async function handleDismiss(taskId: string) {
   await suggestionStore.recordAction(taskId, 'dismissed')
   
   // Remove from current suggestions

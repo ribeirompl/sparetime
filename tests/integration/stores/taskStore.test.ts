@@ -140,7 +140,7 @@ describe('taskStore integration with IndexedDB', () => {
     it('returns undefined for non-existent task', async () => {
       const store = useTaskStore()
 
-      const updated = await store.update({ id: 99999, name: 'Ghost' })
+      const updated = await store.update({ id: 'non-existent-uuid', name: 'Ghost' })
 
       expect(updated).toBeUndefined()
       expect(store.error).toBe('Task not found')
@@ -158,7 +158,7 @@ describe('taskStore integration with IndexedDB', () => {
   })
 
   describe('T032g: taskStore.delete removes task from IndexedDB', () => {
-    it('deletes task from IndexedDB', async () => {
+    it('soft deletes task in IndexedDB (sets deletedAt)', async () => {
       const store = useTaskStore()
       const task = await store.create(createValidInput())
 
@@ -166,30 +166,32 @@ describe('taskStore integration with IndexedDB', () => {
 
       expect(result).toBe(true)
 
-      // Verify task is removed from IndexedDB
+      // Verify task is soft-deleted in IndexedDB (still exists but has deletedAt)
       const dbTask = await db.tasks.get(task!.id!)
-      expect(dbTask).toBeUndefined()
+      expect(dbTask).toBeDefined()
+      expect(dbTask!.deletedAt).toBeDefined()
     })
 
-    it('removes task from local state', async () => {
+    it('excludes soft-deleted task from active tasks', async () => {
       const store = useTaskStore()
       const task = await store.create(createValidInput())
-      expect(store.tasks).toHaveLength(1)
+      expect(store.activeTasks).toHaveLength(1)
 
       await store.remove(task!.id!)
 
-      expect(store.tasks).toHaveLength(0)
+      // Soft-deleted tasks should not appear in activeTasks
+      expect(store.activeTasks).toHaveLength(0)
     })
 
     it('returns false for non-existent task', async () => {
       const store = useTaskStore()
 
-      const result = await store.remove(99999)
+      const result = await store.remove('non-existent-uuid')
 
       expect(result).toBe(false)
     })
 
-    it('can delete multiple tasks independently', async () => {
+    it('can soft-delete multiple tasks independently', async () => {
       const store = useTaskStore()
       const task1 = await store.create(createValidInput({ name: 'Task 1' }))
       const task2 = await store.create(createValidInput({ name: 'Task 2' }))
@@ -197,10 +199,11 @@ describe('taskStore integration with IndexedDB', () => {
 
       await store.remove(task2!.id!)
 
-      expect(store.tasks).toHaveLength(2)
-      expect(store.tasks.find((t) => t.id === task1!.id)).toBeDefined()
-      expect(store.tasks.find((t) => t.id === task2!.id)).toBeUndefined()
-      expect(store.tasks.find((t) => t.id === task3!.id)).toBeDefined()
+      // activeTasks should not include the soft-deleted task
+      expect(store.activeTasks).toHaveLength(2)
+      expect(store.activeTasks.find((t) => t.id === task1!.id)).toBeDefined()
+      expect(store.activeTasks.find((t) => t.id === task2!.id)).toBeUndefined()
+      expect(store.activeTasks.find((t) => t.id === task3!.id)).toBeDefined()
     })
   })
 
@@ -278,8 +281,9 @@ describe('taskStore integration with IndexedDB', () => {
 
   describe('loadTasks', () => {
     it('loads tasks from IndexedDB into store', async () => {
-      // Add tasks directly to DB
+      // Add tasks directly to DB with UUID ids (required since we don't use auto-increment)
       await db.tasks.add({
+        id: crypto.randomUUID(),
         name: 'Direct Task 1',
         type: 'one-off',
         timeEstimateMinutes: 30,
@@ -291,6 +295,7 @@ describe('taskStore integration with IndexedDB', () => {
         updatedAt: new Date().toISOString()
       })
       await db.tasks.add({
+        id: crypto.randomUUID(),
         name: 'Direct Task 2',
         type: 'one-off',
         timeEstimateMinutes: 60,

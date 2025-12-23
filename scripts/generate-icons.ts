@@ -29,10 +29,20 @@ async function generateIcons() {
   for (const icon of icons) {
     const outputPath = join(ICONS_DIR, icon.name)
 
-    await sharp(SOURCE_SVG)
-      .resize(icon.size, icon.size)
-      .png()
-      .toFile(outputPath)
+    const pipeline = sharp(SOURCE_SVG).resize(icon.size, icon.size)
+
+    // Add white background for non-maskable icons
+    // Maskable icons should remain transparent for OS to apply its own background
+    if (!icon.maskable) {
+      await pipeline
+        .flatten({ background: '#ffffff' })
+        .png()
+        .toFile(outputPath)
+    } else {
+      await pipeline
+        .png()
+        .toFile(outputPath)
+    }
 
     console.log(`✓ Generated ${icon.name} (${icon.size}x${icon.size}${icon.maskable ? ', maskable' : ''})`)
   }

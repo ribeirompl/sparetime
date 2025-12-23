@@ -14,15 +14,15 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'complete', taskId: number): void
-  (e: 'dismiss', taskId: number): void
+  (e: 'complete', taskId: string): void
+  (e: 'dismiss', taskId: string): void
 }>()
 
-function handleComplete(taskId: number) {
+function handleComplete(taskId: string) {
   emit('complete', taskId)
 }
 
-function handleDismiss(taskId: number) {
+function handleDismiss(taskId: string) {
   emit('dismiss', taskId)
 }
 </script>

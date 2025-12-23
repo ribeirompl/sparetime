@@ -56,7 +56,7 @@
 - [X] T016 [P] Define TypeScript interfaces for Task in src/types/task.ts (TaskType, TaskStatus, EffortLevel, Location)
 - [X] T017 [P] Define TypeScript interfaces for RecurringPattern and ProjectSession in src/types/task.ts
 - [X] T018 [P] Define TypeScript interfaces for SuggestionSession in src/types/suggestion.ts (SuggestionContext, TaskScore, SuggestionResult)
-- [X] T019 [P] Define TypeScript interfaces for SyncState in src/types/sync.ts (EncryptedToken, PendingChange, SyncConflict)
+- [X] T019 [P] Define TypeScript interfaces for SyncState in src/types/sync.ts (plain accessToken string, PendingChange, SyncConflict)
 - [X] T020 [P] Create validation utilities in src/utils/validation.ts (validateTask per data-model.md rules)
 - [X] T021 [P] Create date helper utilities in src/utils/dateHelpers.ts (wrappers for date-fns functions)
 - [X] T022 Configure Vite PWA Plugin in vite.config.ts with generateSW strategy per research.md
@@ -238,38 +238,54 @@
 
 ### Tests for User Story 5 (Write FIRST - must FAIL before implementation) ⚠️
 
-- [ ] T082a [P] [US5] Unit test: deriveKey produces consistent key from same deviceId+salt in tests/unit/utils/crypto.test.ts
-- [ ] T082b [P] [US5] Unit test: encryptToken/decryptToken round-trips successfully in tests/unit/utils/crypto.test.ts
-- [ ] T082c [P] [US5] Unit test: GoogleDriveBackup JSON includes version, timestamp, checksum in tests/unit/services/googleDrive.test.ts
-- [ ] T082d [P] [US5] Integration test: syncStore exports all tasks to JSON format in tests/integration/stores/syncStore.test.ts
-- [ ] T082e [P] [US5] Integration test: syncStore imports JSON and restores tasks to IndexedDB in tests/integration/stores/syncStore.test.ts
-- [ ] T082f [P] [US5] Integration test: pendingChanges queue stores offline edits in tests/integration/stores/syncStore.test.ts
-- [ ] T082g [P] [US5] Integration test: sync conflict resolution keeps newest by timestamp in tests/integration/stores/syncStore.test.ts
-- [ ] T082h [P] [US5] E2E test: enable backup button triggers OAuth flow in tests/e2e/sync.spec.ts
-- [ ] T082i [P] [US5] E2E test: sync status shows "Synced" after successful backup in tests/e2e/sync.spec.ts
-- [ ] T082j [P] [US5] E2E test: disable backup revokes token and stops syncing in tests/e2e/sync.spec.ts
+**Implementation Note**: Redesigned as two-way sync instead of backup/restore paradigm. Tests updated to reflect merge algorithm with timestamp-based conflict detection.
+
+- [X] T082a [P] [US5] Unit test: generateChecksum produces consistent SHA-256 hash in tests/unit/utils/crypto.test.ts
+- [X] T082b [P] [US5] Unit test: generateChecksum detects data tampering in tests/unit/utils/crypto.test.ts
+- [X] T082c [P] [US5] Unit test: GoogleDriveBackup JSON includes version, timestamp, checksum in tests/unit/services/googleDrive.test.ts
+- [X] T082d [P] [US5] Integration test: syncStore exports all tasks to JSON format in tests/integration/stores/syncStore.test.ts
+- [X] T082e [P] [US5] Integration test: syncStore imports JSON and restores tasks to IndexedDB in tests/integration/stores/syncStore.test.ts
+- [X] T082f [P] [US5] Integration test: pendingChanges queue stores offline edits in tests/integration/stores/syncStore.test.ts
+- [X] T082g [P] [US5] Integration test: sync conflict resolution keeps newest by timestamp in tests/integration/stores/syncStore.test.ts
+- [X] T082h [P] [US5] Integration test: mergeTask compares timestamps and returns merge outcomes (keep-local/keep-remote/conflict/no-change)
+- [X] T082i [P] [US5] Integration test: performSync handles two-way merge with conflict detection
+- [X] T082j [P] [US5] Integration test: first-time connect scenarios (merge/use-remote/use-local options)
+- [X] T082k [P] [US5] Integration test: debounced sync schedules after 2-second delay
+- [X] T082l [P] [US5] Integration test: remote polling checks every 5 minutes
+- [X] T082m [P] [US5] Integration test: soft-deleted tasks sync correctly with deletedAt timestamp
+- [ ] T082n [P] [US5] E2E test: enable sync button triggers OAuth flow in tests/e2e/sync.spec.ts
+- [ ] T082o [P] [US5] E2E test: sync status shows "Ready" after successful sync in tests/e2e/sync.spec.ts
+- [ ] T082p [P] [US5] E2E test: disable sync revokes token and stops syncing in tests/e2e/sync.spec.ts
+- [ ] T082q [P] [US5] E2E test: first-time connect shows merge dialog with 3 options in tests/e2e/sync.spec.ts
 
 ### Implementation for User Story 5
 
-- [ ] T082 [P] [US5] Create Web Crypto API utilities in src/utils/crypto.ts (deriveKey, encryptToken, decryptToken per research.md)
-- [ ] T083 [P] [US5] Implement device fingerprinting in src/utils/crypto.ts for key derivation
-- [ ] T084 [US5] Create Google Drive API service in src/services/googleDrive.ts (OAuth, upload, download, delete)
-- [ ] T085 [US5] Implement OAuth consent flow in src/services/googleDrive.ts using Google Identity Services
-- [ ] T086 [US5] Implement task data export to JSON in src/stores/syncStore.ts (GoogleDriveBackup interface per data-model.md)
-- [ ] T087 [US5] Implement task data import/restore from JSON in src/stores/syncStore.ts
-- [ ] T088 [US5] Add encrypted token storage in syncState table using Web Crypto API
-- [ ] T089 [US5] Implement pending changes queue in src/stores/syncStore.ts for offline edits
-- [ ] T090 [US5] Implement automatic sync when connectivity returns in src/stores/syncStore.ts
-- [ ] T091 [US5] Implement sync conflict resolution using last-modified timestamp in src/stores/syncStore.ts
-- [ ] T092 [P] [US5] Create GoogleDriveSync component in src/components/settings/GoogleDriveSync.vue (enable/disable backup)
-- [ ] T093 [P] [US5] Create SyncStatus component in src/components/settings/SyncStatus.vue (show sync state, last sync time)
-- [ ] T094 [US5] Implement SettingsView in src/views/SettingsView.vue with GoogleDriveSync and SyncStatus components
-- [ ] T095 [US5] Add "Enable Google Drive Backup" button that triggers OAuth consent flow
-- [ ] T096 [US5] Add "Disable Backup" button that revokes OAuth token
-- [ ] T097 [US5] Add manual sync trigger button in SettingsView
-- [ ] T098 [US5] Add sync/backup status indicator in App.vue (shows if changes are synced to Google Drive when backup enabled)
-- [ ] T099 [P] [US5] Style SettingsView and sync components with Tailwind CSS
-- [ ] T100 [US5] Add environment variable handling for VITE_GOOGLE_CLIENT_ID and VITE_GOOGLE_API_KEY
+**Implementation Note**: Redesigned as two-way sync with automatic debounced sync (2s) and remote polling (5min). Includes first-time connect merge dialog and online/offline detection.
+
+- [X] T082 [P] [US5] Implement SHA-256 checksum generation in src/utils/crypto.ts
+- [X] T083 [P] [US5] Create Google Drive API service in src/services/googleDrive.ts (OAuth, upload, download, delete)
+- [X] T084 [P] [US5] Implement OAuth consent flow in src/services/googleDrive.ts using Google Identity Services
+- [X] T085 [P] [US5] Implement task data export to JSON in src/stores/syncStore.ts (GoogleDriveBackup interface per data-model.md)
+- [X] T086 [P] [US5] Implement task data import/restore from JSON in src/stores/syncStore.ts
+- [X] T087 [P] [US5] Add plain token storage in syncState table (storeAccessToken, getAccessToken, clearAuth)
+- [X] T088 [P] [US5] Implement mergeTask function with timestamp-based conflict detection (keep-local/keep-remote/conflict/no-change)
+- [X] T089 [P] [US5] Implement performSync with two-way merge logic (download → merge by UUID → upload)
+- [X] T090 [P] [US5] Implement scheduleDebouncedSync with 2-second debounce timer
+- [X] T091 [P] [US5] Implement startRemoteCheckPolling / stopRemoteCheckPolling with 5-minute interval
+- [X] T092 [P] [US5] Implement checkFirstTimeConnect and handleFirstTimeMerge with 3 options (merge/use-remote/use-local)
+- [X] T093 [P] [US5] Implement registerOnlineListeners / unregisterOnlineListeners for network state detection
+- [X] T094 [P] [US5] Update GoogleDriveSync component for two-way sync UI (renamed buttons, merge dialog)
+- [X] T095 [P] [US5] Integrate scheduleDebouncedSync into taskStore mutations (create/update/delete/updateStatus)
+- [X] T096 [P] [US5] Update SettingsView in src/views/SettingsView.vue with GoogleDriveSync component
+- [X] T097 [P] [US5] Add Google Identity Services script to index.html
+- [X] T098 [P] [US5] Create settings component index exports in src/components/settings/index.ts
+- [ ] T099 [US5] Test OAuth flow end-to-end (connect, sync, disconnect)
+- [ ] T100 [US5] Test automatic debounced sync (edit task, verify sync after 2 seconds)
+- [ ] T101 [US5] Test remote polling (make remote change, verify detected within 5 minutes)
+- [ ] T102 [US5] Test first-time connect merge dialog (3 options)
+- [ ] T103 [US5] Test online/offline detection (go offline, auto-sync when back online)
+- [ ] T104 [US5] Test conflict resolution (edit same task on two devices)
+- [ ] T105 [US5] Add environment variable VITE_GOOGLE_CLIENT_ID to .env.local documentation
 
 **Checkpoint**: All user stories (1-5) should now be independently functional
 
@@ -283,6 +299,7 @@
 - [ ] T102 [P] Add storage quota warning UI in App.vue (trigger at 80% usage)
 - [ ] T103 [P] Create export all data to JSON feature in SettingsView (FR-013)
 - [ ] T104 [P] Create delete all local data feature in SettingsView (FR-014)
+- [ ] T104a [P] Create delete all google drive data feature in SettingsView (if backup enabled)
 - [ ] T105 [P] Add loading states to all async operations (task CRUD, suggestions, sync)
 - [ ] T106 [P] Add error boundary handling in App.vue for graceful error display
 - [ ] T107 [P] Create common Button component in src/components/common/Button.vue with touch target sizes

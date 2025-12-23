@@ -82,22 +82,26 @@ As a user managing recurring chores, I want overdue tasks to naturally become mo
 
 ---
 
-### User Story 5 - Enable Google Drive Backup (Priority: P3)
+### User Story 5 - Enable Google Drive Sync (Priority: P3)
 
-As a user who values data safety and cross-device access, I want to optionally enable Google Drive backup so that my task data is safely stored and can be restored if I switch devices or reinstall the app.
+As a user who values data safety and cross-device access, I want to optionally enable Google Drive sync so that my task data is automatically synchronized across devices with intelligent merge handling.
 
-**Why this priority**: Important for data safety and multi-device use, but not core to the task copilot experience. Users can use the app fully offline without backup.
+**Why this priority**: Important for data safety and multi-device use, but not core to the task copilot experience. Users can use the app fully offline without sync.
 
-**Independent Test**: Enable Google Drive backup via OAuth consent flow. Verify JSON export of tasks is uploaded to private Google Drive app data folder. Clear local IndexedDB and verify restore from Drive backup. Can be tested without affecting offline functionality.
+**Independent Test**: Enable Google Drive sync via OAuth consent flow. Verify two-way sync merges local and remote changes. Test conflict detection when same task modified on multiple devices. Verify offline changes queue and sync when back online.
+
+**Security Model**: OAuth access tokens are stored in IndexedDB, which is origin-isolated and protected by browser security. Tokens expire after 1 hour and have limited scope (drive.appdata only). Users can revoke access at any time through Google Account settings.
 
 **Acceptance Scenarios**:
 
-1. **Given** I'm in app settings, **When** I tap "Enable Google Drive Backup", **Then** I'm redirected to Google OAuth consent screen
-2. **Given** I grant OAuth permissions, **When** authentication completes, **Then** app uploads current task data as JSON to Drive's private app data folder
-3. **Given** backup is enabled, **When** I make changes to tasks, **Then** changes sync to Google Drive within 30 seconds (when online)
-4. **Given** I have backup enabled on device A, **When** I install the app on device B and sign in with same Google account, **Then** tasks are restored from Drive backup
-5. **Given** I'm offline with backup enabled, **When** I make task changes, **Then** changes are queued and sync automatically when connectivity returns
-6. **Given** backup is enabled, **When** I disable it in settings, **Then** OAuth token is revoked and no further syncs occur (local data remains)
+1. **Given** I'm in app settings, **When** I tap "Enable Google Drive Sync", **Then** I'm redirected to Google OAuth consent screen
+2. **Given** I grant OAuth permissions, **When** authentication completes and both local and remote have data, **Then** I see a merge dialog with options: "Merge Both", "Use Google Drive Data", or "Use This Device's Data"
+3. **Given** sync is enabled, **When** I make changes to tasks, **Then** changes automatically sync to Google Drive after 2 seconds of inactivity (debounced)
+4. **Given** I have sync enabled, **When** remote data changes, **Then** app checks for updates every 5 minutes and automatically merges changes
+5. **Given** I'm offline with sync enabled, **When** I make task changes, **Then** changes are queued locally and sync automatically when connectivity returns
+6. **Given** I modify the same task on two devices, **When** sync runs, **Then** system detects the conflict and keeps the version with the latest updatedAt timestamp
+7. **Given** sync is enabled, **When** I disable it in settings, **Then** OAuth token is revoked, polling stops, and no further syncs occur (local data remains)
+8. **Given** I soft-delete a task, **When** sync runs, **Then** the deletion syncs to other devices and task is permanently removed after 30 days
 
 ---
 
@@ -106,7 +110,8 @@ As a user who values data safety and cross-device access, I want to optionally e
 - **No tasks in system**: When user requests suggestions but has no tasks, show onboarding message: "Add a task to get started"
 - **All tasks exceed available time**: If no tasks fit declared time window, suggest breaking projects into smaller sessions or increasing time availability
 - **Conflicting context filters**: If context filters (e.g., "low energy" + "requires high focus") exclude all tasks, show "No tasks match your current context. Try adjusting filters or adding more tasks."
-- **Google Drive sync conflicts**: If task data on Drive differs from local (e.g., edited on multiple devices), use last-modified timestamp to keep newest version and log conflict for user review
+- **Google Drive sync conflicts**: If same task modified on multiple devices since last sync, system detects conflict. Conflicts are resolved by keeping the version with the latest updatedAt timestamp. Both versions are temporarily preserved in syncState.conflicts for review
+- **Task soft delete**: When a task is deleted, it's marked with deletedAt timestamp and hidden from UI. After 30 days, it's permanently removed. This allows sync to propagate deletions across devices
 - **Storage quota exceeded**: If IndexedDB approaches quota limits, warn user and suggest archiving completed tasks or enabling export/cleanup
 - **Recurring task completion during interval**: If user completes a recurring task early (before due), next due date calculates from completion time, not original due date
 - **Project session interruption**: If user abandons a project mid-session, it remains available for next time-based suggestion without penalty
@@ -124,7 +129,7 @@ As a user who values data safety and cross-device access, I want to optionally e
 - Q: What is the decay curve shape for urgency increase in recurring tasks? → A: Linear growth (urgency increases proportionally to days overdue, and decreases proportionally for tasks not yet due)
 - Q: What should the system display when fewer than 3 tasks match criteria? → A: Show all available matches (1-2 tasks) without padding or special messaging
 - Q: What is the maximum allowed time estimate for a single task or session? → A: 480 minutes (8 hours), with UI validation preventing invalid entry and API returning errors
-- Q: How should OAuth tokens be stored to prevent unauthorized access? → A: IndexedDB with Web Crypto API encryption using device-derived key
+- Q: How should OAuth tokens be stored? → A: Plain text in IndexedDB, relying on browser's origin isolation, disk encryption, and limited token scope (drive.appdata). Tokens expire after 1 hour.
 - Q: What units should recurring intervals support? → A: Days, weeks, months, and years (intervalValue 1-999)
 - Q: Should effort and location be optional or mandatory? → A: Mandatory on all tasks; priority defaults to 5 if not specified
 - Q: Should invalid inputs have defaults? → A: No - UI prevents invalid entry, API returns validation errors
@@ -187,7 +192,7 @@ As a user who values data safety and cross-device access, I want to optionally e
   - User action taken (task selected, dismissed, postponed)
 
 - **Sync State** (if Google Drive backup enabled):
-  - OAuth token (stored in IndexedDB encrypted with Web Crypto API using device-derived key)
+  - OAuth token (stored plain text in IndexedDB, protected by browser origin isolation)
   - Last sync timestamp
   - Pending changes queue (for offline edits)
   - Conflict resolution log

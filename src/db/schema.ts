@@ -6,15 +6,18 @@
  * - [status+type]: Filter active/completed tasks by type
  * - [recurringPattern.nextDueDate+status]: Query active recurring tasks by due date
  * - dependsOnId: Quickly find tasks that depend on a given task
+ * - deletedAt: Filter soft-deleted tasks
  */
 
 /**
- * Schema version 1 - Initial schema
- * Index definitions for Dexie.js
+ * Schema version 1 - UUID-based IDs with soft delete support
+ *
+ * Note: Tasks use string UUIDs as primary keys (not auto-increment).
+ * UUIDs are generated in the store layer using crypto.randomUUID().
  */
 export const SCHEMA_VERSION_1 = {
   tasks:
-    '++id, name, type, status, deadline, [status+type], dependsOnId, recurringPattern.nextDueDate, [recurringPattern.nextDueDate+status], effortLevel, location',
+    'id, name, type, status, deadline, [status+type], dependsOnId, recurringPattern.nextDueDate, [recurringPattern.nextDueDate+status], effortLevel, location, deletedAt',
   suggestionSessions: '++id, timestamp',
   syncState: 'id'
 } as const

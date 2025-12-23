@@ -39,8 +39,8 @@ export interface ProjectSession {
  * Full Task entity as stored in IndexedDB
  */
 export interface Task {
-  /** Auto-increment primary key */
-  id?: number
+  /** UUID primary key (generated with crypto.randomUUID()) */
+  id: string
   /** Task name (1-200 characters) */
   name: string
   /** Task type: one-off, recurring, or project */
@@ -58,11 +58,13 @@ export interface Task {
   /** Optional deadline (ISO date string) */
   deadline?: string
   /** Optional dependency on another task */
-  dependsOnId?: number
+  dependsOnId?: string
   /** Creation timestamp (ISO date string) */
   createdAt: string
   /** Last update timestamp (ISO date string) */
   updatedAt: string
+  /** Soft delete timestamp (ISO date string, null if not deleted) */
+  deletedAt?: string
   /** Recurring pattern (only for recurring tasks) */
   recurringPattern?: RecurringPattern
   /** Project session config (only for project tasks) */
@@ -81,7 +83,7 @@ export interface CreateTaskInput {
   location: Location
   priority: number
   deadline?: Date
-  dependsOnId?: number
+  dependsOnId?: string
   recurringPattern?: Omit<RecurringPattern, 'nextDueDate'>
   projectSession?: ProjectSession
 }
@@ -91,6 +93,6 @@ export interface CreateTaskInput {
  * All fields except id are optional
  */
 export interface UpdateTaskInput extends Partial<Omit<CreateTaskInput, 'deadline'>> {
-  id: number
+  id: string
   deadline?: Date | string
 }

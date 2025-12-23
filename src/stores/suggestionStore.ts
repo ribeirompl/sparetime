@@ -188,7 +188,7 @@ export const useSuggestionStore = defineStore('suggestion', () => {
    * Record action taken on a suggestion
    */
   async function recordAction(
-    taskId: number,
+    taskId: string,
     action: 'completed' | 'dismissed' | 'postponed'
   ): Promise<void> {
     // This would update the most recent session with the action taken

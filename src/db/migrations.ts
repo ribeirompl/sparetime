@@ -4,6 +4,9 @@
  *
  * Each migration function handles upgrading from the previous version.
  * Migrations are run automatically by Dexie.js when the database is opened.
+ *
+ * Note: Currently no migrations needed - app uses version 1 schema with UUIDs.
+ * Migration infrastructure is kept for future schema changes.
  */
 
 import type { Transaction } from 'dexie'
@@ -15,17 +18,11 @@ export type MigrationFn = (tx: Transaction) => Promise<void>
 
 /**
  * Migration registry - maps version numbers to migration functions
- * Version 1 is the initial schema, so no migration needed
- * Add migrations here for future versions
+ * Version 1 is the initial schema with UUIDs, so no migration needed.
+ * Add migrations here for future versions.
  */
 export const migrations: Record<number, MigrationFn> = {
-  // Version 2 example (future):
-  // 2: async (tx) => {
-  //   // Migrate existing tasks to add new fields
-  //   await tx.table('tasks').toCollection().modify(task => {
-  //     task.tags = []
-  //   })
-  // }
+  // No migrations currently - app starts with UUID-based schema
 }
 
 /**

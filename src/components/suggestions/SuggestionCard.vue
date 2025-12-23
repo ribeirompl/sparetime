@@ -12,8 +12,8 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'complete', taskId: number): void
-  (e: 'dismiss', taskId: number): void
+  (e: 'complete', taskId: string): void
+  (e: 'dismiss', taskId: string): void
 }>()
 
 /**

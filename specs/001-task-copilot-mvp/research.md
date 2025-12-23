@@ -39,39 +39,39 @@ export function useTasks() {
 
 ---
 
-### 2. Dexie.js IndexedDB Schema Versioning and Migrations
+### 2. Dexie.js IndexedDB Schema Design
 
 **Question**: How should we structure IndexedDB schemas with Dexie.js to support future migrations while maintaining offline-first integrity?
 
-**Decision**: Version-based schema with incremental migrations, maintaining backward compatibility
+**Decision**: UUID-based schema with migration infrastructure for future changes
 
 **Rationale**:
 - Dexie.js provides declarative schema versioning via `.version()` API
-- Each version includes upgrade function for data migration
+- UUIDs as primary keys enable reliable cross-device sync without ID conflicts
 - Support for up to 10,000 tasks requires efficient indexing strategy
 - Compound indexes on frequently queried fields (status + type, nextDueDate)
+- Soft delete with deletedAt field for sync conflict resolution
 
 **Alternatives Considered**:
-- Single monolithic schema: Rejected - no migration path for future features
+- Auto-increment IDs: Rejected - causes sync conflicts when same ID exists on multiple devices
 - Runtime migrations: Rejected - adds complexity and offline failure points
 
 **Implementation Pattern**:
 ```typescript
 const db = new Dexie('SparetimeDB')
 
+// Version 1: UUID-based IDs with soft delete
 db.version(1).stores({
-  tasks: '++id, name, type, status, deadline, nextDueDate, [status+type], dependsOnId',
+  tasks: 'id, name, type, status, deadline, [status+type], dependsOnId, recurringPattern.nextDueDate, [recurringPattern.nextDueDate+status], effortLevel, location, deletedAt',
   suggestionSessions: '++id, timestamp',
-  syncState: 'id, lastSyncTimestamp'
+  syncState: 'id'
 })
 
+// Future versions can add new tables or indexes
 db.version(2).stores({
-  tasks: '++id, name, type, status, deadline, nextDueDate, [status+type], [nextDueDate+status], dependsOnId'
+  // Add new indexes or tables as needed
 }).upgrade(tx => {
   // Migration logic for v1 → v2
-  return tx.table('tasks').toCollection().modify(task => {
-    // Add new computed fields if needed
-  })
 })
 ```
 
@@ -189,66 +189,71 @@ export default defineConfig({
 
 ---
 
-### 5. Web Crypto API for OAuth Token Encryption
+### 5. OAuth Token Storage for Google Drive Backup
 
-**Question**: How should OAuth tokens be encrypted using Web Crypto API with device-derived key?
+**Question**: How should OAuth access tokens be stored in IndexedDB for the optional Google Drive backup feature?
 
-**Decision**: Use AES-GCM with PBKDF2-derived key from device identifier + salt
+**Decision**: Store tokens as plain text in IndexedDB, relying on browser security model
 
 **Rationale**:
-- AES-GCM provides authenticated encryption (prevents tampering)
-- PBKDF2 derives consistent key from device fingerprint
-- Salt stored alongside encrypted token in IndexedDB
-- No user password required (device-bound encryption)
-- Tokens decrypted only when needed for Google Drive API calls
+- IndexedDB is origin-isolated (only the app's origin can access it)
+- Modern browsers provide disk encryption at the OS level
+- OAuth tokens have limited scope (drive.appdata only - app's private folder)
+- Tokens expire after 1 hour, limiting exposure window
+- User can revoke access at any time through Google Account settings
+- Follows standard practice for client-side OAuth applications
+- Simplifies implementation and reduces bundle size
 
 **Alternatives Considered**:
-- Plain storage: Rejected - violates security requirements
-- User-password encryption: Rejected - adds friction for optional feature
+- Device-based encryption with Web Crypto API: Rejected - device fingerprints are unstable (browser updates, screen resolution changes, etc.) causing permanent token loss
+- User password encryption: Rejected - adds UX friction for an optional feature
 - SessionStorage: Rejected - requires frequent re-authentication
 
-**Implementation Pattern**:
+**Security Model**:
 ```typescript
-async function deriveKey(deviceId: string, salt: Uint8Array): Promise<CryptoKey> {
-  const encoder = new TextEncoder()
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode(deviceId),
-    'PBKDF2',
-    false,
-    ['deriveKey']
-  )
-
-  return crypto.subtle.deriveKey(
-    {
-      name: 'PBKDF2',
-      salt,
-      iterations: 100000,
-      hash: 'SHA-256'
-    },
-    keyMaterial,
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['encrypt', 'decrypt']
-  )
+// Simple storage pattern - browser provides security
+export interface SyncState {
+  id: number // Always 1 - only one sync state record
+  accessToken?: string // Plain OAuth token
+  lastSyncedAt?: string // ISO date string (renamed from lastSyncTimestamp)
+  pendingChanges: Array<{
+    taskId: string // UUID
+    operation: 'create' | 'update' | 'delete'
+    timestamp: string
+    data?: Task // Optional task snapshot for conflict resolution
+  }>
+  conflicts: Array<{
+    taskId: string // UUID
+    localData: Task
+    remoteData: Task
+    detectedAt: string // ISO date string
+  }>
 }
 
-async function encryptToken(token: string): Promise<EncryptedToken> {
-  const deviceId = await getDeviceFingerprint() // Based on navigator.userAgent + other stable props
-  const salt = crypto.getRandomValues(new Uint8Array(16))
-  const iv = crypto.getRandomValues(new Uint8Array(12))
-  const key = await deriveKey(deviceId, salt)
+// Store token directly
+async function storeAccessToken(token: string): Promise<void> {
+  await db.syncState.put({
+    id: 1,
+    accessToken: token,
+    lastSyncedAt: undefined,
+    pendingChanges: [],
+    conflicts: []
+  })
+}
 
-  const encoder = new TextEncoder()
-  const encrypted = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv },
-    key,
-    encoder.encode(token)
-  )
-
-  return { encrypted, salt, iv }
+// Retrieve token
+async function getAccessToken(): Promise<string | null> {
+  const state = await db.syncState.get(1)
+  return state?.accessToken ?? null
 }
 ```
+
+**Why This Is Safe**:
+- Browser origin isolation prevents cross-site access
+- Limited token scope minimizes impact if compromised
+- Short token lifetime (1 hour) reduces exposure window
+- No sensitive data in backup (only task list)
+- User maintains control via Google Account settings
 
 ---
 
@@ -363,7 +368,7 @@ function calculateUrgency(task: RecurringTask, now: Date): number {
 | **PWA** | Vite PWA Plugin | `generateSW`, NetworkFirst for HTML, CacheFirst for assets |
 | **Styling** | Tailwind CSS + Headless UI | JIT mode, mobile-first breakpoints, accessible components |
 | **Dates** | date-fns | Tree-shakeable imports, core arithmetic functions |
-| **Security** | Web Crypto API | AES-GCM encryption for OAuth tokens |
+| **Security** | IndexedDB + Browser Security | Plain token storage with origin isolation, limited OAuth scope |
 | **Scoring** | Custom algorithm | Equal-weighted factors, urgency tiebreaker, linear decay |
 | **Routing** | Vue Router 4 | Hash mode for PWA compatibility |
 | **Testing** | Vitest + Playwright | Unit/integration + E2E with offline scenarios |
