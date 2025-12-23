@@ -390,7 +390,7 @@ function handleCancel() {
           <input
             id="priority"
             v-model.number="priority"
-            data-testid="task-priority-input"
+            data-testid="priority-input"
             type="range"
             min="0"
             max="10"

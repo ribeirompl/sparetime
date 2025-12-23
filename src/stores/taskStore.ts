@@ -190,7 +190,16 @@ export const useTaskStore = defineStore('task', () => {
       }
 
       if (input.name !== undefined) updates.name = input.name
-      if (input.type !== undefined) updates.type = input.type
+      if (input.type !== undefined) {
+        updates.type = input.type
+        // Clear type-specific fields when changing type
+        if (input.type !== 'recurring') {
+          updates.recurringPattern = undefined
+        }
+        if (input.type !== 'project') {
+          updates.projectSession = undefined
+        }
+      }
       if (input.timeEstimateMinutes !== undefined)
         updates.timeEstimateMinutes = input.timeEstimateMinutes
       if (input.effortLevel !== undefined) updates.effortLevel = input.effortLevel
@@ -204,17 +213,17 @@ export const useTaskStore = defineStore('task', () => {
           input.deadline instanceof Date ? input.deadline.toISOString() : input.deadline
       }
 
-      // Handle recurring pattern update
+      // Handle recurring pattern update (use toRaw to avoid proxy issues)
       if (input.recurringPattern !== undefined) {
         updates.recurringPattern = {
-          ...input.recurringPattern,
+          ...toRaw(input.recurringPattern),
           nextDueDate: calculateNextDueDateFromPattern(input.recurringPattern)
         }
       }
 
-      // Handle project session update
+      // Handle project session update (use toRaw to avoid proxy issues)
       if (input.projectSession !== undefined) {
-        updates.projectSession = input.projectSession
+        updates.projectSession = toRaw(input.projectSession)
       }
 
       // Update in IndexedDB

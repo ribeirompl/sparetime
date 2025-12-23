@@ -63,7 +63,7 @@ function setTypeFilter(type: TaskType | 'all') {
 </script>
 
 <template>
-  <div class="pb-20">
+  <div data-testid="tasks-view" class="pb-20">
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-2xl font-bold text-gray-900">My Tasks</h2>

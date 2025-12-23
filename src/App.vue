@@ -223,6 +223,7 @@ function getStatusTitle(): string {
       <div class="mx-auto max-w-7xl flex justify-around py-2">
         <router-link
           to="/"
+          data-testid="nav-tasks"
           class="flex flex-col items-center touch-target justify-center text-gray-600 hover:text-primary-600"
           active-class="text-primary-600"
         >
@@ -245,6 +246,7 @@ function getStatusTitle(): string {
 
         <router-link
           to="/suggestions"
+          data-testid="nav-suggestions"
           class="flex flex-col items-center touch-target justify-center text-gray-600 hover:text-primary-600"
           active-class="text-primary-600"
         >
