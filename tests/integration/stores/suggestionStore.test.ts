@@ -447,3 +447,249 @@ describe('T049i: completing recurring task resets urgency and calculates new nex
     expect(newUrgency).toBeLessThan(0)
   })
 })
+
+describe('T066d-f: suggestionStore filters by effort level and location', () => {
+  beforeEach(async () => {
+    setActivePinia(createPinia())
+    await db.tasks.clear()
+    await db.suggestionSessions.clear()
+  })
+
+  afterEach(async () => {
+    await db.tasks.clear()
+    await db.suggestionSessions.clear()
+  })
+
+  const createValidInput = (overrides: Partial<CreateTaskInput> = {}): CreateTaskInput => ({
+    name: 'Test Task',
+    type: 'one-off',
+    timeEstimateMinutes: 30,
+    effortLevel: 'medium',
+    location: 'home',
+    priority: 5,
+    ...overrides
+  })
+
+  describe('T066d: suggestionStore filters by effort level', () => {
+    it('should filter tasks by effort level using "or lower" logic', async () => {
+      const taskStore = useTaskStore()
+      const suggestionStore = useSuggestionStore()
+
+      // Create tasks with different effort levels
+      await taskStore.create(createValidInput({ name: 'Low Effort', effortLevel: 'low' }))
+      await taskStore.create(createValidInput({ name: 'Medium Effort', effortLevel: 'medium' }))
+      await taskStore.create(createValidInput({ name: 'High Effort', effortLevel: 'high' }))
+
+      // Filter for low effort only
+      const lowResult = await suggestionStore.generateSuggestions({
+        availableTimeMinutes: 60,
+        contextFilters: { effortLevel: 'low' }
+      })
+
+      expect(lowResult.suggestions).toHaveLength(1)
+      expect(lowResult.suggestions[0].task.name).toBe('Low Effort')
+    })
+
+    it('should include lower effort tasks when filtering for medium', async () => {
+      const taskStore = useTaskStore()
+      const suggestionStore = useSuggestionStore()
+
+      await taskStore.create(createValidInput({ name: 'Low Effort', effortLevel: 'low' }))
+      await taskStore.create(createValidInput({ name: 'Medium Effort', effortLevel: 'medium' }))
+      await taskStore.create(createValidInput({ name: 'High Effort', effortLevel: 'high' }))
+
+      // Filter for medium = low + medium
+      const mediumResult = await suggestionStore.generateSuggestions({
+        availableTimeMinutes: 60,
+        contextFilters: { effortLevel: 'medium' }
+      })
+
+      expect(mediumResult.suggestions).toHaveLength(2)
+      const names = mediumResult.suggestions.map(s => s.task.name)
+      expect(names).toContain('Low Effort')
+      expect(names).toContain('Medium Effort')
+      expect(names).not.toContain('High Effort')
+    })
+
+    it('should include all tasks when filtering for high', async () => {
+      const taskStore = useTaskStore()
+      const suggestionStore = useSuggestionStore()
+
+      await taskStore.create(createValidInput({ name: 'Low Effort', effortLevel: 'low' }))
+      await taskStore.create(createValidInput({ name: 'Medium Effort', effortLevel: 'medium' }))
+      await taskStore.create(createValidInput({ name: 'High Effort', effortLevel: 'high' }))
+
+      // Filter for high = all
+      const highResult = await suggestionStore.generateSuggestions({
+        availableTimeMinutes: 60,
+        contextFilters: { effortLevel: 'high' }
+      })
+
+      expect(highResult.suggestions).toHaveLength(3)
+    })
+  })
+
+  describe('T066e: suggestionStore filters by location', () => {
+    it('should filter tasks by exact location match', async () => {
+      const taskStore = useTaskStore()
+      const suggestionStore = useSuggestionStore()
+
+      await taskStore.create(createValidInput({ name: 'Home Task', location: 'home' }))
+      await taskStore.create(createValidInput({ name: 'Outside Task', location: 'outside' }))
+
+      const homeResult = await suggestionStore.generateSuggestions({
+        availableTimeMinutes: 60,
+        contextFilters: { location: 'home' }
+      })
+
+      expect(homeResult.suggestions).toHaveLength(1)
+      expect(homeResult.suggestions[0].task.name).toBe('Home Task')
+    })
+
+    it('should include "anywhere" tasks regardless of location filter', async () => {
+      const taskStore = useTaskStore()
+      const suggestionStore = useSuggestionStore()
+
+      await taskStore.create(createValidInput({ name: 'Home Task', location: 'home' }))
+      await taskStore.create(createValidInput({ name: 'Anywhere Task', location: 'anywhere' }))
+      await taskStore.create(createValidInput({ name: 'Outside Task', location: 'outside' }))
+
+      const homeResult = await suggestionStore.generateSuggestions({
+        availableTimeMinutes: 60,
+        contextFilters: { location: 'home' }
+      })
+
+      expect(homeResult.suggestions).toHaveLength(2)
+      const names = homeResult.suggestions.map(s => s.task.name)
+      expect(names).toContain('Home Task')
+      expect(names).toContain('Anywhere Task')
+      expect(names).not.toContain('Outside Task')
+    })
+  })
+
+  describe('T066f: combined effort+location filters return intersection', () => {
+    it('should return only tasks matching both filters', async () => {
+      const taskStore = useTaskStore()
+      const suggestionStore = useSuggestionStore()
+
+      await taskStore.create(createValidInput({ name: 'Low Home', effortLevel: 'low', location: 'home' }))
+      await taskStore.create(createValidInput({ name: 'Low Outside', effortLevel: 'low', location: 'outside' }))
+      await taskStore.create(createValidInput({ name: 'High Home', effortLevel: 'high', location: 'home' }))
+      await taskStore.create(createValidInput({ name: 'High Outside', effortLevel: 'high', location: 'outside' }))
+
+      const result = await suggestionStore.generateSuggestions({
+        availableTimeMinutes: 60,
+        contextFilters: { effortLevel: 'low', location: 'home' }
+      })
+
+      expect(result.suggestions).toHaveLength(1)
+      expect(result.suggestions[0].task.name).toBe('Low Home')
+    })
+
+    it('should return empty when no tasks match combined filters', async () => {
+      const taskStore = useTaskStore()
+      const suggestionStore = useSuggestionStore()
+
+      await taskStore.create(createValidInput({ name: 'Low Outside', effortLevel: 'low', location: 'outside' }))
+      await taskStore.create(createValidInput({ name: 'High Home', effortLevel: 'high', location: 'home' }))
+
+      const result = await suggestionStore.generateSuggestions({
+        availableTimeMinutes: 60,
+        contextFilters: { effortLevel: 'low', location: 'home' }
+      })
+
+      expect(result.suggestions).toHaveLength(0)
+      expect(result.message).toContain('No tasks fit')
+    })
+
+    it('should include anywhere tasks when combined with effort filter', async () => {
+      const taskStore = useTaskStore()
+      const suggestionStore = useSuggestionStore()
+
+      await taskStore.create(createValidInput({ name: 'Low Anywhere', effortLevel: 'low', location: 'anywhere' }))
+      await taskStore.create(createValidInput({ name: 'High Home', effortLevel: 'high', location: 'home' }))
+
+      const result = await suggestionStore.generateSuggestions({
+        availableTimeMinutes: 60,
+        contextFilters: { effortLevel: 'low', location: 'home' }
+      })
+
+      expect(result.suggestions).toHaveLength(1)
+      expect(result.suggestions[0].task.name).toBe('Low Anywhere')
+    })
+  })
+})
+
+describe('T074d: overdue tasks rank higher than due-today tasks', () => {
+  beforeEach(async () => {
+    setActivePinia(createPinia())
+    await db.tasks.clear()
+    await db.suggestionSessions.clear()
+  })
+
+  afterEach(async () => {
+    await db.tasks.clear()
+    await db.suggestionSessions.clear()
+  })
+
+  const createValidInput = (overrides: Partial<CreateTaskInput> = {}): CreateTaskInput => ({
+    name: 'Test Task',
+    type: 'one-off',
+    timeEstimateMinutes: 30,
+    effortLevel: 'medium',
+    location: 'home',
+    priority: 5,
+    ...overrides
+  })
+
+  it('should rank overdue recurring task higher than due-today task', async () => {
+    const taskStore = useTaskStore()
+    const suggestionStore = useSuggestionStore()
+
+    const now = Date.now()
+
+    // Create task due today (lastCompleted 7 days ago with 7-day interval = due today)
+    await taskStore.create(
+      createValidInput({
+        name: 'Due Today',
+        type: 'recurring',
+        priority: 5,
+        recurringPattern: {
+          intervalValue: 7,
+          intervalUnit: 'days',
+          lastCompletedDate: new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      })
+    )
+
+    // Create overdue task (lastCompleted 12 days ago with 7-day interval = 5 days overdue)
+    await taskStore.create(
+      createValidInput({
+        name: 'Overdue Task',
+        type: 'recurring',
+        priority: 5, // Same priority
+        recurringPattern: {
+          intervalValue: 7,
+          intervalUnit: 'days',
+          lastCompletedDate: new Date(now - 12 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      })
+    )
+
+    const result = await suggestionStore.generateSuggestions({ availableTimeMinutes: 60 })
+
+    // Overdue task should rank higher due to urgency tiebreaker
+    expect(result.suggestions.length).toBe(2)
+
+    const overdueTask = result.suggestions.find(s => s.task.name === 'Overdue Task')
+    const dueTodayTask = result.suggestions.find(s => s.task.name === 'Due Today')
+
+    expect(overdueTask).toBeDefined()
+    expect(dueTodayTask).toBeDefined()
+    expect(overdueTask!.urgency).toBeGreaterThan(0) // Overdue = positive
+    expect(dueTodayTask!.urgency).toBe(0) // Due today = 0
+
+    // Overdue should rank higher (come first)
+    expect(result.suggestions[0].task.name).toBe('Overdue Task')
+  })
+})

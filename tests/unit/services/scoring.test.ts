@@ -159,11 +159,11 @@ describe('Scoring Algorithm', () => {
       // = (1.0 + 1.0 + 0 + 0) / 4 = 0.5
       // But since urgency 0 normalizes to 0.5 (due today = moderate urgency), we get:
       // = (1.0 + 1.0 + 0.5 + 0) / 4 = 0.625
-      
+
       // Verify the score is normalized between 0 and 1
       expect(score).toBeGreaterThanOrEqual(0)
       expect(score).toBeLessThanOrEqual(1)
-      
+
       // Verify all factors are accounted for (at least priority and timeMatch)
       expect(factors.priority).toBe(1) // 10/10
       expect(factors.timeMatch).toBe(1) // 60/60
@@ -386,6 +386,124 @@ describe('Scoring Algorithm', () => {
       expect(sorted[0].taskId).toBe(3)
       expect(sorted[1].taskId).toBe(2)
       expect(sorted[2].taskId).toBe(1)
+    })
+  })
+
+  describe('T066a - Scoring includes effortMatch factor when filter provided', () => {
+    it('should include effortMatch in score calculation when filter is provided', () => {
+      const matchingTask = createTestTask({ effortLevel: 'low' })
+      const nonMatchingTask = createTestTask({ effortLevel: 'high' })
+
+      const context = createTestContext({
+        contextFilters: { effortLevel: 'low' }
+      })
+
+      const matchingScore = calculateScore(matchingTask, context)
+      const nonMatchingScore = calculateScore(nonMatchingTask, context)
+
+      // Matching task should score higher
+      expect(matchingScore).toBeGreaterThan(nonMatchingScore)
+    })
+
+    it('should return effortMatch = 1 for matching effort level', () => {
+      const task = createTestTask({ effortLevel: 'medium' })
+      const context = createTestContext({
+        contextFilters: { effortLevel: 'medium' }
+      })
+
+      const factors = calculateFactors(task, context)
+      expect(factors.effortMatch).toBe(1)
+    })
+
+    it('should return effortMatch = 0 for non-matching effort level', () => {
+      const task = createTestTask({ effortLevel: 'high' })
+      const context = createTestContext({
+        contextFilters: { effortLevel: 'low' }
+      })
+
+      const factors = calculateFactors(task, context)
+      expect(factors.effortMatch).toBe(0)
+    })
+  })
+
+  describe('T066b - Scoring includes locationMatch factor when filter provided', () => {
+    it('should include locationMatch in score calculation when filter is provided', () => {
+      const matchingTask = createTestTask({ location: 'home' })
+      const nonMatchingTask = createTestTask({ location: 'outside' })
+
+      const context = createTestContext({
+        contextFilters: { location: 'home' }
+      })
+
+      const matchingScore = calculateScore(matchingTask, context)
+      const nonMatchingScore = calculateScore(nonMatchingTask, context)
+
+      // Matching task should score higher
+      expect(matchingScore).toBeGreaterThan(nonMatchingScore)
+    })
+
+    it('should return locationMatch = 1 for matching location', () => {
+      const task = createTestTask({ location: 'outside' })
+      const context = createTestContext({
+        contextFilters: { location: 'outside' }
+      })
+
+      const factors = calculateFactors(task, context)
+      expect(factors.locationMatch).toBe(1)
+    })
+
+    it('should return locationMatch = 0 for non-matching location', () => {
+      const task = createTestTask({ location: 'home' })
+      const context = createTestContext({
+        contextFilters: { location: 'outside' }
+      })
+
+      const factors = calculateFactors(task, context)
+      expect(factors.locationMatch).toBe(0)
+    })
+  })
+
+  describe('T066c - Location "anywhere" matches all location filters', () => {
+    it('should return locationMatch = 1 for anywhere task with home filter', () => {
+      const task = createTestTask({ location: 'anywhere' })
+      const context = createTestContext({
+        contextFilters: { location: 'home' }
+      })
+
+      const factors = calculateFactors(task, context)
+      expect(factors.locationMatch).toBe(1)
+    })
+
+    it('should return locationMatch = 1 for anywhere task with outside filter', () => {
+      const task = createTestTask({ location: 'anywhere' })
+      const context = createTestContext({
+        contextFilters: { location: 'outside' }
+      })
+
+      const factors = calculateFactors(task, context)
+      expect(factors.locationMatch).toBe(1)
+    })
+
+    it('should return locationMatch = 1 for anywhere task with anywhere filter', () => {
+      const task = createTestTask({ location: 'anywhere' })
+      const context = createTestContext({
+        contextFilters: { location: 'anywhere' }
+      })
+
+      const factors = calculateFactors(task, context)
+      expect(factors.locationMatch).toBe(1)
+    })
+
+    it('should score anywhere tasks equally regardless of location filter', () => {
+      const anywhereTask = createTestTask({ location: 'anywhere', priority: 5, timeEstimateMinutes: 30 })
+
+      const homeContext = createTestContext({ contextFilters: { location: 'home' } })
+      const outsideContext = createTestContext({ contextFilters: { location: 'outside' } })
+
+      const homeScore = calculateScore(anywhereTask, homeContext)
+      const outsideScore = calculateScore(anywhereTask, outsideContext)
+
+      expect(homeScore).toBe(outsideScore)
     })
   })
 })
