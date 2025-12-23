@@ -156,6 +156,31 @@ function findDifferences(local: Task, remote: Task): Array<{ field: string; loca
     })
   }
   
+  // Compare recurring pattern if both are recurring type
+  if (local.type === 'recurring' && remote.type === 'recurring') {
+    if (local.recurringPattern && remote.recurringPattern) {
+      if (local.recurringPattern.intervalValue !== remote.recurringPattern.intervalValue ||
+          local.recurringPattern.intervalUnit !== remote.recurringPattern.intervalUnit) {
+        diffs.push({
+          field: 'Recurring Pattern',
+          localValue: `Every ${local.recurringPattern.intervalValue} ${local.recurringPattern.intervalUnit}`,
+          remoteValue: `Every ${remote.recurringPattern.intervalValue} ${remote.recurringPattern.intervalUnit}`
+        })
+      }
+    }
+  }
+  
+  // Compare project session if both are project type
+  if (local.type === 'project' && remote.type === 'project') {
+    if (local.projectSession?.minSessionDurationMinutes !== remote.projectSession?.minSessionDurationMinutes) {
+      diffs.push({
+        field: 'Min Session',
+        localValue: `${local.projectSession?.minSessionDurationMinutes || 0} min`,
+        remoteValue: `${remote.projectSession?.minSessionDurationMinutes || 0} min`
+      })
+    }
+  }
+  
   return diffs
 }
 </script>
@@ -235,6 +260,12 @@ function findDifferences(local: Task, remote: Task): Array<{ field: string; loca
             <div v-if="conflict.localData.dependsOnId" class="version-meta">
               <span>🔗 Depends on: {{ getTaskNameById(conflict.localData.dependsOnId) }}</span>
             </div>
+            <div v-if="conflict.localData.type === 'recurring' && conflict.localData.recurringPattern" class="version-meta">
+              <span>🔄 Every {{ conflict.localData.recurringPattern.intervalValue }} {{ conflict.localData.recurringPattern.intervalUnit }}</span>
+            </div>
+            <div v-if="conflict.localData.type === 'project' && conflict.localData.projectSession" class="version-meta">
+              <span>⏱️ Min session: {{ conflict.localData.projectSession.minSessionDurationMinutes }} min</span>
+            </div>
             <button
               type="button"
               class="btn-resolve local"
@@ -262,6 +293,12 @@ function findDifferences(local: Task, remote: Task): Array<{ field: string; loca
             </div>
             <div v-if="conflict.remoteData.dependsOnId" class="version-meta">
               <span>🔗 Depends on: {{ getTaskNameById(conflict.remoteData.dependsOnId) }}</span>
+            </div>
+            <div v-if="conflict.remoteData.type === 'recurring' && conflict.remoteData.recurringPattern" class="version-meta">
+              <span>🔄 Every {{ conflict.remoteData.recurringPattern.intervalValue }} {{ conflict.remoteData.recurringPattern.intervalUnit }}</span>
+            </div>
+            <div v-if="conflict.remoteData.type === 'project' && conflict.remoteData.projectSession" class="version-meta">
+              <span>⏱️ Min session: {{ conflict.remoteData.projectSession.minSessionDurationMinutes }} min</span>
             </div>
             <button
               type="button"
