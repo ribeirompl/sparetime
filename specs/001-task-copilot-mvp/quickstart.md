@@ -71,6 +71,8 @@ To get Google API credentials (optional):
 5. Add `http://localhost:5173` to authorized origins
 6. Copy Client ID and API Key to `.env.local`
 
+> **Note**: Two-way sync automatically syncs changes 2 seconds after edits and checks for remote changes every 5 minutes when online.
+
 ## 3. Start Development Server (1 minute)
 
 ```bash
@@ -119,12 +121,13 @@ In DevTools → Application tab → Manifest → Verify "SpareTime Task Copilot"
 4. Verify task appears in list
 5. Refresh page → task should persist (IndexedDB working)
 
-### Check 5: Offline Mode
+### Check 5: Offline Mode & Two-Way Sync
 
 1. In DevTools → Network tab → Check "Offline"
 2. Refresh page → app should still load
 3. Add/edit tasks → should work offline
-4. Uncheck "Offline" → app should sync (if Google Drive configured)
+4. Uncheck "Offline" → app should automatically sync after 2 seconds (if Google Drive sync enabled)
+5. Changes made on another device should appear within 5 minutes via remote polling
 
 ## 5. Run Tests (2 minutes)
 

@@ -14,7 +14,7 @@ This document defines the IndexedDB schema managed by Dexie.js, TypeScript inter
 ┌─────────────────────────┐
 │       Task              │
 │─────────────────────────│
-│ id: number (PK)         │
+│ id: string (UUID PK)    │
 │ name: string            │
 │ type: TaskType          │
 │ timeEstimateMinutes: n  │
@@ -23,9 +23,10 @@ This document defines the IndexedDB schema managed by Dexie.js, TypeScript inter
 │ status: TaskStatus      │
 │ priority?: number       │
 │ deadline?: Date         │
-│ dependsOnId?: number    │◄─┐
+│ dependsOnId?: string    │◄─┐
 │ createdAt: Date         │  │ Self-reference
-│ updatedAt: Date         │──┘ (task dependencies)
+│ updatedAt: Date         │  │ (task dependencies)
+│ deletedAt?: Date        │──┘ Soft delete timestamp
 │ recurringPattern?: RP   │
 │ projectSession?: PS     │
 └─────────────────────────┘
@@ -46,9 +47,9 @@ This document defines the IndexedDB schema managed by Dexie.js, TypeScript inter
 ┌─────────────────────────┐
 │      SyncState          │
 │─────────────────────────│
-│ id: 'singleton' (PK)    │
-│ encryptedToken?: Enc    │
-│ lastSyncTimestamp?: Date│
+│ id: 1 (singleton PK)    │
+│ accessToken?: string    │
+│ lastSyncedAt?: Date     │
 │ pendingChanges: Change[]│
 │ conflicts: Conflict[]   │
 └─────────────────────────┘
@@ -56,13 +57,13 @@ This document defines the IndexedDB schema managed by Dexie.js, TypeScript inter
 
 ## Dexie.js Schema Definition
 
-### Version 1 (Initial Schema)
+### Version 1 (Current Schema - UUID & Soft Delete)
 
 ```typescript
 import Dexie, { Table } from 'dexie'
 
 export interface Task {
-  id?: number // Auto-increment primary key
+  id: string // UUID primary key
   name: string
   type: 'one-off' | 'recurring' | 'project'
   timeEstimateMinutes: number // 1-480 minutes, mandatory
@@ -71,9 +72,10 @@ export interface Task {
   status: 'active' | 'completed' | 'archived'
   priority: number // 0-10, defaults to 5
   deadline?: string // ISO date string, optional
-  dependsOnId?: number // FK to another task
+  dependsOnId?: string // FK to another task (UUID)
   createdAt: string // ISO date string
   updatedAt: string // ISO date string
+  deletedAt?: string // ISO date string for soft delete (30-day retention)
 
   // Recurring-specific fields
   recurringPattern?: {
@@ -114,36 +116,34 @@ export interface SuggestionSession {
 }
 
 export interface SyncState {
-  id: 'singleton' // Always 'singleton' - only one sync state record
-  encryptedToken?: {
-    encrypted: ArrayBuffer
-    salt: Uint8Array
-    iv: Uint8Array
-  }
-  lastSyncTimestamp?: string // ISO date string
+  id: number // Always 1 - only one sync state record
+  accessToken?: string // OAuth access token (plain text, browser origin isolation provides security)
+  lastSyncedAt?: string // ISO date string (renamed from lastSyncTimestamp)
   pendingChanges: Array<{
-    taskId: number
+    taskId: string // UUID
     operation: 'create' | 'update' | 'delete'
     timestamp: string
+    data?: Task // Optional task snapshot for conflict resolution
   }>
   conflicts: Array<{
-    taskId: number
-    localVersion: Task
-    remoteVersion: Task
-    timestamp: string
+    taskId: string // UUID
+    localData: Task
+    remoteData: Task
+    detectedAt: string // ISO date string
   }>
 }
 
 export class SparetimeDatabase extends Dexie {
-  tasks!: Table<Task, number>
+  tasks!: Table<Task, string> // UUID primary key
   suggestionSessions!: Table<SuggestionSession, number>
-  syncState!: Table<SyncState, string>
+  syncState!: Table<SyncState, number>
 
   constructor() {
     super('SparetimeDB')
 
+    // Version 1: UUID-based IDs with soft delete support
     this.version(1).stores({
-      tasks: '++id, name, type, status, deadline, [status+type], dependsOnId, recurringPattern.nextDueDate, [recurringPattern.nextDueDate+status], effortLevel, location',
+      tasks: 'id, name, type, status, deadline, [status+type], dependsOnId, recurringPattern.nextDueDate, [recurringPattern.nextDueDate+status], effortLevel, location, deletedAt',
       suggestionSessions: '++id, timestamp',
       syncState: 'id'
     })
@@ -161,9 +161,10 @@ export const db = new SparetimeDatabase()
 2. `[recurringPattern.nextDueDate+status]`: Efficiently query active recurring tasks by due date (urgency calculations)
 3. `dependsOnId`: Quickly find tasks that depend on a given task (dependency checking)
 4. `recurringPattern.nextDueDate`: Sort recurring tasks by urgency
+5. `deletedAt`: Efficiently query soft-deleted tasks for cleanup
 
 **Query Performance**:
-- Single task lookup: O(log n) via primary key
+- Single task lookup: O(log n) via UUID primary key
 - Active tasks by type: O(log n) via compound index
 - Dependency check: O(log n) via dependsOnId index
 - Suggestion generation: Filter by status+type, then score in-memory (~1000 tasks analyzed in <100ms)
@@ -249,12 +250,6 @@ export interface SuggestionResult {
 ### Sync Types
 
 ```typescript
-export interface EncryptedToken {
-  encrypted: ArrayBuffer
-  salt: Uint8Array
-  iv: Uint8Array
-}
-
 export interface PendingChange {
   taskId: number
   operation: 'create' | 'update' | 'delete'
@@ -368,10 +363,12 @@ export function validateTask(input: CreateTaskInput): ValidationResult {
 
 ### Future Schema Versions
 
+Migration infrastructure is in place for future schema changes. Example:
+
 ```typescript
 // Example: Version 2 might add tags or categories
 db.version(2).stores({
-  tasks: '++id, name, type, status, deadline, [status+type], dependsOnId, recurringPattern.nextDueDate, [recurringPattern.nextDueDate+status], *tags',
+  tasks: 'id, name, type, status, deadline, [status+type], dependsOnId, recurringPattern.nextDueDate, [recurringPattern.nextDueDate+status], *tags, effortLevel, location, deletedAt',
   suggestionSessions: '++id, timestamp',
   syncState: 'id',
   tags: '++id, name' // New table
@@ -381,33 +378,6 @@ db.version(2).stores({
     task.tags = []
   })
 })
-
-// Version 3 might add completed task archive
-db.version(3).stores({
-  tasks: '++id, name, type, status, deadline, [status+type], dependsOnId, recurringPattern.nextDueDate, [recurringPattern.nextDueDate+status], *tags',
-  suggestionSessions: '++id, timestamp',
-  syncState: 'id',
-  tags: '++id, name',
-  archivedTasks: '++id, originalId, name, completedAt' // New table for completed tasks
-}).upgrade(async tx => {
-  // Move completed tasks older than 90 days to archive
-  const ninetyDaysAgo = new Date()
-  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
-
-  const oldCompletedTasks = await tx.table('tasks')
-    .where('status').equals('completed')
-    .and(task => new Date(task.updatedAt) < ninetyDaysAgo)
-    .toArray()
-
-  for (const task of oldCompletedTasks) {
-    await tx.table('archivedTasks').add({
-      originalId: task.id,
-      name: task.name,
-      completedAt: task.updatedAt
-    })
-    await tx.table('tasks').delete(task.id!)
-  }
-})
 ```
 
 ## Storage Estimates
@@ -415,7 +385,7 @@ db.version(3).stores({
 **Per-entity storage**:
 - Task: ~500 bytes average (200 char name + metadata + optional fields)
 - SuggestionSession: ~200 bytes (timestamp + scores + action)
-- SyncState: ~2KB (encrypted token + pending changes)
+- SyncState: ~2KB (access token + pending changes)
 
 **10,000 task capacity**:
 - Tasks: 10,000 × 500 bytes = 5MB

@@ -174,8 +174,8 @@ export function validateTask(input: CreateTaskInput): ValidationResult {
  * @returns true if circular dependency would be created
  */
 export function detectCircularDependency(
-  taskId: number | undefined,
-  dependsOnId: number,
+  taskId: string | undefined,
+  dependsOnId: string,
   allTasks: Task[]
 ): boolean {
   // If no taskId (new task), can't have circular dependency pointing to itself
@@ -189,7 +189,7 @@ export function detectCircularDependency(
   }
 
   // Build a map for quick lookup
-  const taskMap = new Map<number, Task>()
+  const taskMap = new Map<string, Task>()
   for (const task of allTasks) {
     if (task.id !== undefined) {
       taskMap.set(task.id, task)
@@ -198,8 +198,8 @@ export function detectCircularDependency(
 
   // Follow the dependency chain from dependsOnId
   // If we find taskId, there's a cycle
-  const visited = new Set<number>()
-  let currentId: number | undefined = dependsOnId
+  const visited = new Set<string>()
+  let currentId: string | undefined = dependsOnId
 
   while (currentId !== undefined) {
     // If we've seen this task, there's a cycle (not involving our task, but still a problem)

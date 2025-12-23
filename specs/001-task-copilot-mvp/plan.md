@@ -13,13 +13,13 @@ Build a mobile-first PWA task copilot that helps users manage home chores and pe
 
 **Language/Version**: TypeScript 5.9+ with ES2022+ features, strict mode enabled
 **Primary Dependencies**: Vue 3.5+ (Composition API), Dexie.js 4.x (IndexedDB wrapper), Vite 7.x (build tool), Vite PWA Plugin 1.x (service worker generation), Pinia 3.x (state management), Vue Router 4.6+ (routing), date-fns 4.x (date calculations), Tailwind CSS 4.x (styling), Headless UI 1.7+ (accessible components)
-**Storage**: IndexedDB via Dexie.js (primary source of truth), Google Drive API with OAuth 2.0 for optional backup
+**Storage**: IndexedDB via Dexie.js (primary source of truth, UUID-based task IDs for sync), Google Drive API with OAuth 2.0 for two-way sync
 **Testing**: Vitest 4.x (unit/integration), Playwright 1.57+ (E2E PWA testing including offline scenarios)
 **Target Platform**: PWA installable on iOS Safari 15+, Android Chrome 90+, Desktop Chrome/Edge/Firefox latest
 **Project Type**: pwa-client-only (no backend, fully client-side)
-**Performance Goals**: Lighthouse ≥90 all categories, First Contentful Paint <1.5s, Time to Interactive <3.5s, Largest Contentful Paint <2.5s
-**Constraints**: Initial JS bundle target ~200KB gzipped; CI should warn if bundle >200KB. App must be offline-capable after initial load, touch targets ≥44x44px, Web Crypto API encryption for OAuth tokens
-**Scale/Scope**: Support up to 10,000 tasks, 5 user stories (2 P1 MVP, 2 P2, 1 P3), ~15-20 Vue components, IndexedDB schema v1 with migration support
+**Performance Goals**: Lighthouse ≥90 all categories, First Contentful Paint <1.5s, Time to Interactive <3.5s, Largest Contentful Paint <2.5s, Sync debounce 2s, Remote polling 5min
+**Constraints**: Initial JS bundle target ~200KB gzipped; CI should warn if bundle >200KB. App must be offline-capable after initial load, touch targets ≥44x44px, OAuth tokens stored in IndexedDB (browser origin isolation provides security), Two-way sync with conflict detection
+**Scale/Scope**: Support up to 10,000 tasks, 5 user stories (2 P1 MVP, 2 P2, 1 P3), ~15-20 Vue components, IndexedDB schema v1 with UUID-based IDs and migration support for future versions
 
 ## Constitution Check
 
@@ -36,7 +36,7 @@ Build a mobile-first PWA task copilot that helps users manage home chores and pe
 - ✅ IndexedDB (via Dexie.js) designated as single source of truth
 - ✅ No backend servers specified - fully client-side architecture
 - ✅ Google Drive backup is optional (P3 user story), not required
-- ✅ OAuth tokens encrypted with Web Crypto API per spec clarifications
+- ✅ OAuth tokens stored in IndexedDB with browser origin isolation
 - ✅ Data schema versioning supported by Dexie.js migrations
 
 ### III. PWA Standards Compliance ✅ PASS
@@ -50,7 +50,7 @@ Build a mobile-first PWA task copilot that helps users manage home chores and pe
 ### IV. Privacy & Data Control ✅ PASS
 - ✅ No analytics or tracking mentioned in spec - privacy by default
 - ✅ Google Drive backup requires explicit opt-in (US5 P3)
-- ✅ OAuth tokens stored with Web Crypto API encryption (spec clarification)
+- ✅ OAuth tokens stored in IndexedDB (browser origin isolation provides security)
 - ✅ Export to JSON required (FR-013)
 - ✅ Delete all local data required (FR-014)
 - ✅ No third-party scripts beyond specified dependencies
@@ -103,7 +103,7 @@ src/
 ├── utils/                  # Utility functions
 │   ├── dateHelpers.ts     # date-fns wrappers for date calculations
 │   ├── validation.ts      # Input validation (time estimates, etc.)
-│   └── crypto.ts          # Web Crypto API helpers for token encryption
+│   └── crypto.ts          # SHA-256 checksum generation for data integrity
 ├── router/                 # Vue Router configuration
 │   └── index.ts           # Route definitions
 ├── App.vue                 # Root component

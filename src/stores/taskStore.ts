@@ -4,11 +4,27 @@
  */
 
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, toRaw } from 'vue'
 import { db } from '@/db/database'
 import type { Task, TaskStatus, TaskType, CreateTaskInput, UpdateTaskInput } from '@/types/task'
 import { validateTask, detectCircularDependency } from '@/utils/validation'
 import { calculateNextDueDateFromPattern, nowISO } from '@/utils/dateHelpers'
+import { useSyncStore } from '@/stores/syncStore'
+
+/**
+ * Generate a UUID for new tasks
+ */
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+  // Fallback: generate UUID v4 using getRandomValues
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = crypto.getRandomValues(new Uint8Array(1))[0] % 16
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+}
 
 /**
  * Task store for managing task state and operations
@@ -19,18 +35,26 @@ export const useTaskStore = defineStore('task', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  // Getters
-  const activeTasks = computed(() => tasks.value.filter((t) => t.status === 'active'))
+  // Getters - filter out soft-deleted tasks
+  const activeTasks = computed(() =>
+    tasks.value.filter((t) => t.status === 'active' && !t.deletedAt)
+  )
 
-  const completedTasks = computed(() => tasks.value.filter((t) => t.status === 'completed'))
+  const completedTasks = computed(() =>
+    tasks.value.filter((t) => t.status === 'completed' && !t.deletedAt)
+  )
 
-  const archivedTasks = computed(() => tasks.value.filter((t) => t.status === 'archived'))
+  const archivedTasks = computed(() =>
+    tasks.value.filter((t) => t.status === 'archived' && !t.deletedAt)
+  )
 
-  const tasksByType = computed(() => (type: TaskType) => tasks.value.filter((t) => t.type === type))
+  const tasksByType = computed(
+    () => (type: TaskType) => tasks.value.filter((t) => t.type === type && !t.deletedAt)
+  )
 
-  const taskById = computed(() => (id: number) => tasks.value.find((t) => t.id === id))
+  const taskById = computed(() => (id: string) => tasks.value.find((t) => t.id === id))
 
-  const taskCount = computed(() => tasks.value.length)
+  const taskCount = computed(() => tasks.value.filter((t) => !t.deletedAt).length)
 
   const activeTaskCount = computed(() => activeTasks.value.length)
 
@@ -79,9 +103,13 @@ export const useTaskStore = defineStore('task', () => {
         }
       }
 
+      // Generate UUID for new task
+      const id = generateUUID()
+
       // Build the task object
       const now = nowISO()
       const task: Task = {
+        id,
         name: input.name,
         type: input.type,
         timeEstimateMinutes: input.timeEstimateMinutes,
@@ -109,11 +137,17 @@ export const useTaskStore = defineStore('task', () => {
       }
 
       // Save to IndexedDB
-      const id = await db.tasks.add(task)
-      task.id = id
+      await db.tasks.add(task)
 
       // Update local state
       tasks.value.push(task)
+
+      // Track pending change for sync
+      const syncStore = useSyncStore()
+      if (syncStore.isBackupEnabled) {
+        await syncStore.addPendingChange(id, 'create', toRaw(task))
+        syncStore.scheduleDebouncedSync()
+      }
 
       return task
     } catch (e) {
@@ -190,6 +224,14 @@ export const useTaskStore = defineStore('task', () => {
       const index = tasks.value.findIndex((t) => t.id === input.id)
       if (index !== -1) {
         tasks.value[index] = { ...tasks.value[index], ...updates }
+        
+        // Track pending change for sync
+        const syncStore = useSyncStore()
+        if (syncStore.isBackupEnabled) {
+          await syncStore.addPendingChange(input.id, 'update', toRaw(tasks.value[index]))
+          syncStore.scheduleDebouncedSync()
+        }
+        
         return tasks.value[index]
       }
 
@@ -204,22 +246,33 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   /**
-   * Delete a task
+   * Delete a task (soft delete - sets deletedAt timestamp)
    *
    * @param id - Task ID to delete
    * @returns true if deleted, false otherwise
    */
-  async function remove(id: number): Promise<boolean> {
+  async function remove(id: string): Promise<boolean> {
     loading.value = true
     error.value = null
 
     try {
-      await db.tasks.delete(id)
+      const now = nowISO()
+      
+      // Soft delete: set deletedAt timestamp
+      await db.tasks.update(id, { deletedAt: now, updatedAt: now })
 
       // Update local state
       const index = tasks.value.findIndex((t) => t.id === id)
       if (index !== -1) {
-        tasks.value.splice(index, 1)
+        tasks.value[index] = { ...tasks.value[index], deletedAt: now, updatedAt: now }
+
+        // Track pending change for sync
+        const syncStore = useSyncStore()
+        if (syncStore.isBackupEnabled) {
+          await syncStore.addPendingChange(id, 'delete', toRaw(tasks.value[index]))
+          syncStore.scheduleDebouncedSync()
+        }
+
         return true
       }
 
@@ -240,7 +293,7 @@ export const useTaskStore = defineStore('task', () => {
    * @param id - Task ID to complete
    * @returns Updated task or undefined if not found
    */
-  async function complete(id: number): Promise<Task | undefined> {
+  async function complete(id: string): Promise<Task | undefined> {
     const task = tasks.value.find((t) => t.id === id)
     if (!task) {
       error.value = 'Task not found'
@@ -281,7 +334,7 @@ export const useTaskStore = defineStore('task', () => {
    * @param status - New status
    * @returns Updated task or undefined if not found
    */
-  async function updateStatus(id: number, status: TaskStatus): Promise<Task | undefined> {
+  async function updateStatus(id: string, status: TaskStatus): Promise<Task | undefined> {
     loading.value = true
     error.value = null
 
@@ -293,6 +346,14 @@ export const useTaskStore = defineStore('task', () => {
       const index = tasks.value.findIndex((t) => t.id === id)
       if (index !== -1) {
         tasks.value[index] = { ...tasks.value[index], status, updatedAt: now }
+        
+        // Track pending change for sync
+        const syncStore = useSyncStore()
+        if (syncStore.isBackupEnabled) {
+          await syncStore.addPendingChange(id, 'update', toRaw(tasks.value[index]))
+          syncStore.scheduleDebouncedSync()
+        }
+        
         return tasks.value[index]
       }
 
@@ -312,7 +373,7 @@ export const useTaskStore = defineStore('task', () => {
    * @param id - Task ID
    * @returns Task or undefined if not found
    */
-  async function getById(id: number): Promise<Task | undefined> {
+  async function getById(id: string): Promise<Task | undefined> {
     // First check local state
     const cached = tasks.value.find((t) => t.id === id)
     if (cached) return cached
@@ -332,7 +393,7 @@ export const useTaskStore = defineStore('task', () => {
    * @param taskId - Task ID to check
    * @returns true if task has incomplete dependencies
    */
-  function hasIncompleteDependencies(taskId: number): boolean {
+  function hasIncompleteDependencies(taskId: string): boolean {
     const task = tasks.value.find((t) => t.id === taskId)
     if (!task || !task.dependsOnId) return false
 
@@ -340,6 +401,38 @@ export const useTaskStore = defineStore('task', () => {
     if (!dependency) return false
 
     return dependency.status !== 'completed'
+  }
+
+  /**
+   * Permanently delete soft-deleted tasks older than the retention period
+   * Default retention is 30 days
+   *
+   * @param retentionDays - Number of days to retain soft-deleted tasks (default: 30)
+   * @returns Number of tasks permanently deleted
+   */
+  async function cleanupDeletedTasks(retentionDays = 30): Promise<number> {
+    const cutoffDate = new Date()
+    cutoffDate.setDate(cutoffDate.getDate() - retentionDays)
+    const cutoffISO = cutoffDate.toISOString()
+
+    // Find all soft-deleted tasks older than cutoff
+    const tasksToDelete = tasks.value.filter(
+      (t) => t.deletedAt && t.deletedAt < cutoffISO
+    )
+
+    if (tasksToDelete.length === 0) {
+      return 0
+    }
+
+    // Permanently delete from IndexedDB
+    const idsToDelete = tasksToDelete.map((t) => t.id)
+    await db.tasks.bulkDelete(idsToDelete)
+
+    // Remove from local state
+    tasks.value = tasks.value.filter((t) => !idsToDelete.includes(t.id))
+
+    console.log(`Cleaned up ${idsToDelete.length} soft-deleted tasks older than ${retentionDays} days`)
+    return idsToDelete.length
   }
 
   return {
@@ -365,6 +458,7 @@ export const useTaskStore = defineStore('task', () => {
     complete,
     updateStatus,
     getById,
-    hasIncompleteDependencies
+    hasIncompleteDependencies,
+    cleanupDeletedTasks
   }
 })

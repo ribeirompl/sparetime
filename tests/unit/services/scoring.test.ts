@@ -18,7 +18,7 @@ import type { SuggestionContext, TaskScore } from '@/types/suggestion'
  */
 function createTestTask(overrides: Partial<Task> = {}): Task {
   return {
-    id: 1,
+    id: 'test-uuid-1',
     name: 'Test Task',
     type: 'one-off',
     timeEstimateMinutes: 30,
@@ -205,8 +205,8 @@ describe('Scoring Algorithm', () => {
   describe('T049c - Urgency tiebreaker', () => {
     it('should sort by urgency when scores are equal', () => {
       const overdueTask: TaskScore = {
-        taskId: 1,
-        task: createTestTask({ id: 1 }),
+        taskId: 'uuid-1',
+        task: createTestTask({ id: 'uuid-1' }),
         score: 0.75,
         urgency: 5, // 5 days overdue
         reason: 'test',
@@ -222,8 +222,8 @@ describe('Scoring Algorithm', () => {
       }
 
       const dueTodayTask: TaskScore = {
-        taskId: 2,
-        task: createTestTask({ id: 2 }),
+        taskId: 'uuid-2',
+        task: createTestTask({ id: 'uuid-2' }),
         score: 0.75, // Same score
         urgency: 0, // due today
         reason: 'test',
@@ -246,8 +246,8 @@ describe('Scoring Algorithm', () => {
 
     it('should not use urgency tiebreaker when scores differ significantly', () => {
       const highScoreTask: TaskScore = {
-        taskId: 1,
-        task: createTestTask({ id: 1 }),
+        taskId: 'uuid-1',
+        task: createTestTask({ id: 'uuid-1' }),
         score: 0.9,
         urgency: 0, // due today
         reason: 'test',
@@ -263,8 +263,8 @@ describe('Scoring Algorithm', () => {
       }
 
       const lowScoreHighUrgencyTask: TaskScore = {
-        taskId: 2,
-        task: createTestTask({ id: 2 }),
+        taskId: 'uuid-2',
+        task: createTestTask({ id: 'uuid-2' }),
         score: 0.5, // Much lower score
         urgency: 10, // Very overdue
         reason: 'test',
@@ -287,8 +287,8 @@ describe('Scoring Algorithm', () => {
 
     it('should use urgency tiebreaker when scores are within 0.01', () => {
       const taskA: TaskScore = {
-        taskId: 1,
-        task: createTestTask({ id: 1 }),
+        taskId: 'uuid-1',
+        task: createTestTask({ id: 'uuid-1' }),
         score: 0.755,
         urgency: 2,
         reason: 'test',
@@ -304,8 +304,8 @@ describe('Scoring Algorithm', () => {
       }
 
       const taskB: TaskScore = {
-        taskId: 2,
-        task: createTestTask({ id: 2 }),
+        taskId: 'uuid-2',
+        task: createTestTask({ id: 'uuid-2' }),
         score: 0.750, // Only 0.005 difference
         urgency: 5, // Higher urgency
         reason: 'test',
@@ -329,8 +329,8 @@ describe('Scoring Algorithm', () => {
     it('should correctly sort array of tasks with mixed scores and urgencies', () => {
       const tasks: TaskScore[] = [
         {
-          taskId: 1,
-          task: createTestTask({ id: 1 }),
+          taskId: 'uuid-1',
+          task: createTestTask({ id: 'uuid-1' }),
           score: 0.6,
           urgency: 0,
           reason: 'test',
@@ -345,8 +345,8 @@ describe('Scoring Algorithm', () => {
           }
         },
         {
-          taskId: 2,
-          task: createTestTask({ id: 2 }),
+          taskId: 'uuid-2',
+          task: createTestTask({ id: 'uuid-2' }),
           score: 0.8,
           urgency: 3,
           reason: 'test',
@@ -361,8 +361,8 @@ describe('Scoring Algorithm', () => {
           }
         },
         {
-          taskId: 3,
-          task: createTestTask({ id: 3 }),
+          taskId: 'uuid-3',
+          task: createTestTask({ id: 'uuid-3' }),
           score: 0.8, // Same score as task 2
           urgency: 7, // Higher urgency
           reason: 'test',
@@ -383,9 +383,9 @@ describe('Scoring Algorithm', () => {
       // Task 3 first (same score as 2, but higher urgency)
       // Task 2 second
       // Task 1 last (lowest score)
-      expect(sorted[0].taskId).toBe(3)
-      expect(sorted[1].taskId).toBe(2)
-      expect(sorted[2].taskId).toBe(1)
+      expect(sorted[0].taskId).toBe('uuid-3')
+      expect(sorted[1].taskId).toBe('uuid-2')
+      expect(sorted[2].taskId).toBe('uuid-1')
     })
   })
 
