@@ -173,26 +173,26 @@
 
 ### Tests for User Story 3 (Write FIRST - must FAIL before implementation) ⚠️
 
-- [ ] T066a [P] [US3] Unit test: scoring includes effortMatch factor when filter provided in tests/unit/services/scoring.test.ts
-- [ ] T066b [P] [US3] Unit test: scoring includes locationMatch factor when filter provided in tests/unit/services/scoring.test.ts
-- [ ] T066c [P] [US3] Unit test: location "anywhere" matches all location filters in tests/unit/services/scoring.test.ts
-- [ ] T066d [P] [US3] Integration test: suggestionStore filters by effort level in tests/integration/stores/suggestionStore.test.ts
-- [ ] T066e [P] [US3] Integration test: suggestionStore filters by location in tests/integration/stores/suggestionStore.test.ts
-- [ ] T066f [P] [US3] Integration test: combined effort+location filters return intersection in tests/integration/stores/suggestionStore.test.ts
-- [ ] T066g [P] [US3] E2E test: selecting "low effort" filter shows only low effort tasks in tests/e2e/suggestions.spec.ts
-- [ ] T066h [P] [US3] E2E test: selecting "home" location filter shows home+anywhere tasks in tests/e2e/suggestions.spec.ts
-- [ ] T066i [P] [US3] E2E test: no matches with filters shows context message in tests/e2e/suggestions.spec.ts
+- [X] T066a [P] [US3] Unit test: scoring includes effortMatch factor when filter provided in tests/unit/services/scoring.test.ts
+- [X] T066b [P] [US3] Unit test: scoring includes locationMatch factor when filter provided in tests/unit/services/scoring.test.ts
+- [X] T066c [P] [US3] Unit test: location "anywhere" matches all location filters in tests/unit/services/scoring.test.ts
+- [X] T066d [P] [US3] Integration test: suggestionStore filters by effort level in tests/integration/stores/suggestionStore.test.ts
+- [X] T066e [P] [US3] Integration test: suggestionStore filters by location in tests/integration/stores/suggestionStore.test.ts
+- [X] T066f [P] [US3] Integration test: combined effort+location filters return intersection in tests/integration/stores/suggestionStore.test.ts
+- [X] T066g [P] [US3] E2E test: selecting "low effort" filter shows only low effort tasks in tests/e2e/suggestions.spec.ts
+- [X] T066h [P] [US3] E2E test: selecting "home" location filter shows home+anywhere tasks in tests/e2e/suggestions.spec.ts
+- [X] T066i [P] [US3] E2E test: no matches with filters shows context message in tests/e2e/suggestions.spec.ts
 
 ### Implementation for User Story 3
 
-- [ ] T066 [P] [US3] Extend SuggestionContext interface in src/types/suggestion.ts to include optional contextFilters
-- [ ] T067 [US3] Implement context filter logic in src/stores/suggestionStore.ts (filter by effort and/or location)
-- [ ] T068 [US3] Update scoring algorithm in src/services/scoring.ts to include effortMatch and locationMatch factors
-- [ ] T069 [P] [US3] Add effort level filter dropdown in TimeInput component (src/components/suggestions/TimeInput.vue)
-- [ ] T070 [P] [US3] Add location filter dropdown in TimeInput component (src/components/suggestions/TimeInput.vue)
-- [ ] T071 [US3] Update SuggestionsView in src/views/SuggestionsView.vue to pass context filters to suggestion generation
-- [ ] T072 [US3] Handle edge case: no tasks match all filters (show message "No tasks match your current context")
-- [ ] T073 [P] [US3] Style context filter dropdowns with Tailwind CSS and Headless UI Listbox components
+- [X] T066 [P] [US3] Extend SuggestionContext interface in src/types/suggestion.ts to include optional contextFilters
+- [X] T067 [US3] Implement context filter logic in src/stores/suggestionStore.ts (filter by effort and/or location)
+- [X] T068 [US3] Update scoring algorithm in src/services/scoring.ts to include effortMatch and locationMatch factors
+- [X] T069 [P] [US3] Add effort level filter dropdown in TimeInput component (src/components/suggestions/TimeInput.vue)
+- [X] T070 [P] [US3] Add location filter dropdown in TimeInput component (src/components/suggestions/TimeInput.vue)
+- [X] T071 [US3] Update SuggestionsView in src/views/SuggestionsView.vue to pass context filters to suggestion generation
+- [X] T072 [US3] Handle edge case: no tasks match all filters (show message "No tasks match your current context")
+- [X] T073 [P] [US3] Style context filter dropdowns with Tailwind CSS and Headless UI Listbox components
 
 **Checkpoint**: At this point, User Stories 1, 2, AND 3 should all work independently
 
@@ -206,25 +206,25 @@
 
 ### Tests for User Story 4 (Write FIRST - must FAIL before implementation) ⚠️
 
-- [ ] T074a [P] [US4] Unit test: urgency = daysOverdue for overdue recurring tasks in tests/unit/services/urgency.test.ts
-- [ ] T074b [P] [US4] Unit test: urgency = -daysUntilDue for future recurring tasks in tests/unit/services/urgency.test.ts
-- [ ] T074c [P] [US4] Unit test: urgency = 0 for tasks due today in tests/unit/services/urgency.test.ts
-- [ ] T074d [P] [US4] Integration test: overdue tasks rank higher than due-today tasks in tests/integration/stores/suggestionStore.test.ts
-- [ ] T074e [P] [US4] Integration test: completing recurring task resets urgency to 0 in tests/integration/stores/taskStore.test.ts
-- [ ] T074f [P] [US4] Integration test: nextDueDate calculated from completion time, not original due in tests/integration/stores/taskStore.test.ts
-- [ ] T074g [P] [US4] E2E test: overdue task shows red urgency indicator in tests/e2e/tasks.spec.ts
-- [ ] T074h [P] [US4] E2E test: suggestion reason shows "X days overdue" for overdue tasks in tests/e2e/suggestions.spec.ts
+- [X] T074a [P] [US4] Unit test: urgency = daysOverdue for overdue recurring tasks in tests/unit/services/urgency.test.ts
+- [X] T074b [P] [US4] Unit test: urgency = -daysUntilDue for future recurring tasks in tests/unit/services/urgency.test.ts
+- [X] T074c [P] [US4] Unit test: urgency = 0 for tasks due today in tests/unit/services/urgency.test.ts
+- [X] T074d [P] [US4] Integration test: overdue tasks rank higher than due-today tasks in tests/integration/stores/suggestionStore.test.ts
+- [X] T074e [P] [US4] Integration test: completing recurring task resets urgency to 0 in tests/integration/stores/taskStore.test.ts
+- [X] T074f [P] [US4] Integration test: nextDueDate calculated from completion time, not original due in tests/integration/stores/taskStore.test.ts
+- [X] T074g [P] [US4] E2E test: overdue task shows red urgency indicator in tests/e2e/tasks.spec.ts
+- [X] T074h [P] [US4] E2E test: suggestion reason shows "X days overdue" for overdue tasks in tests/e2e/suggestions.spec.ts
 
 ### Implementation for User Story 4
 
-- [ ] T074 [US4] Implement linear urgency tracking formula in src/services/urgency.ts (urgency = daysOverdue for overdue, -daysUntilDue for future)
-- [ ] T075 [US4] Add urgency calculation to suggestion scoring in src/stores/suggestionStore.ts
-- [ ] T076 [US4] Ensure urgency resets to zero when recurring task is completed in src/stores/taskStore.ts
-- [ ] T077 [US4] Calculate next due date from completion time (not original due date) in src/stores/taskStore.ts
-- [ ] T078 [P] [US4] Add visual urgency indicators in TaskCard component (colors, icons based on urgency level)
-- [ ] T079 [P] [US4] Add visual urgency indicators in SuggestionCard component (highlight overdue tasks)
-- [ ] T080 [US4] Update suggestion reason explanations to mention urgency level (e.g., "2 days overdue")
-- [ ] T081 [P] [US4] Style urgency indicators with Tailwind CSS (red for overdue, yellow for due soon, green for not due)
+- [X] T074 [US4] Implement linear urgency tracking formula in src/services/urgency.ts (urgency = daysOverdue for overdue, -daysUntilDue for future)
+- [X] T075 [US4] Add urgency calculation to suggestion scoring in src/stores/suggestionStore.ts
+- [X] T076 [US4] Ensure urgency resets to zero when recurring task is completed in src/stores/taskStore.ts
+- [X] T077 [US4] Calculate next due date from completion time (not original due date) in src/stores/taskStore.ts
+- [X] T078 [P] [US4] Add visual urgency indicators in TaskCard component (colors, icons based on urgency level)
+- [X] T079 [P] [US4] Add visual urgency indicators in SuggestionCard component (highlight overdue tasks)
+- [X] T080 [US4] Update suggestion reason explanations to mention urgency level (e.g., "2 days overdue")
+- [X] T081 [P] [US4] Style urgency indicators with Tailwind CSS (red for overdue, yellow for due soon, green for not due)
 
 **Checkpoint**: At this point, User Stories 1-4 should all work independently with urgency tracking
 
