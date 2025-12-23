@@ -6,7 +6,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { db } from '@/db/database'
-import type { Task } from '@/types/task'
 import type {
   SuggestionContext,
   SuggestionResult,
@@ -15,6 +14,7 @@ import type {
 } from '@/types/suggestion'
 import { useTaskStore } from './taskStore'
 import { nowISO } from '@/utils/dateHelpers'
+import { scoreAndRankTasks } from '@/services/scoring'
 
 /**
  * Maximum number of suggestions to return
@@ -87,8 +87,12 @@ export const useSuggestionStore = defineStore('suggestion', () => {
       // Apply context filters if provided
       if (context.contextFilters) {
         if (context.contextFilters.effortLevel) {
+          // Effort filter shows tasks at or below the selected energy level
+          // e.g., if user has 'medium' energy, show 'low' and 'medium' tasks
+          const effortLevels: Record<string, number> = { low: 1, medium: 2, high: 3 }
+          const maxEffort = effortLevels[context.contextFilters.effortLevel] || 3
           filteredTasks = filteredTasks.filter(
-            (task) => task.effortLevel === context.contextFilters!.effortLevel
+            (task) => (effortLevels[task.effortLevel] || 2) <= maxEffort
           )
         }
         if (context.contextFilters.location) {
@@ -120,42 +124,8 @@ export const useSuggestionStore = defineStore('suggestion', () => {
         return result
       }
 
-      // Score and rank tasks
-      // Note: Full scoring algorithm will be implemented in src/services/scoring.ts
-      // For now, use basic scoring
-      const scoredTasks: TaskScore[] = filteredTasks.map((task) => ({
-        taskId: task.id!,
-        task,
-        score: calculateBasicScore(task, context),
-        urgency: calculateBasicUrgency(task),
-        reason: generateReason(task, context),
-        factors: {
-          urgency: calculateBasicUrgency(task),
-          deadlineProximity: task.deadline ? 1 : null,
-          priority: task.priority / 10,
-          postponements: 0,
-          timeMatch: 1 - (context.availableTimeMinutes - task.timeEstimateMinutes) / context.availableTimeMinutes,
-          effortMatch: context.contextFilters?.effortLevel
-            ? task.effortLevel === context.contextFilters.effortLevel
-              ? 1
-              : 0
-            : null,
-          locationMatch: context.contextFilters?.location
-            ? task.location === context.contextFilters.location || task.location === 'anywhere'
-              ? 1
-              : 0
-            : null
-        }
-      }))
-
-      // Sort by score (descending), then by urgency (descending) for tiebreaking
-      scoredTasks.sort((a, b) => {
-        const scoreDiff = b.score - a.score
-        if (Math.abs(scoreDiff) < 0.01) {
-          return b.urgency - a.urgency
-        }
-        return scoreDiff
-      })
+      // Score and rank tasks using the scoring service
+      const scoredTasks = scoreAndRankTasks(filteredTasks, context)
 
       // Take top suggestions
       const suggestions = scoredTasks.slice(0, MAX_SUGGESTIONS)
@@ -184,96 +154,6 @@ export const useSuggestionStore = defineStore('suggestion', () => {
     } finally {
       loading.value = false
     }
-  }
-
-  /**
-   * Basic score calculation (placeholder - full implementation in scoring.ts)
-   */
-  function calculateBasicScore(task: Task, context: SuggestionContext): number {
-    let score = 0
-    let factors = 0
-
-    // Priority factor (0-1)
-    score += task.priority / 10
-    factors++
-
-    // Time match factor (prefer tasks that use more of available time)
-    const timeMatch = task.timeEstimateMinutes / context.availableTimeMinutes
-    score += Math.min(timeMatch, 1)
-    factors++
-
-    // Urgency factor (for recurring tasks)
-    const urgency = calculateBasicUrgency(task)
-    if (urgency > 0) {
-      score += Math.min(urgency / 7, 1) // Normalize by week
-      factors++
-    }
-
-    // Deadline factor
-    if (task.deadline) {
-      const daysUntil = Math.max(0, (new Date(task.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-      score += Math.max(0, 1 - daysUntil / 30) // Higher score for closer deadlines
-      factors++
-    }
-
-    return factors > 0 ? score / factors : 0
-  }
-
-  /**
-   * Basic urgency calculation (placeholder - full implementation in urgency.ts)
-   */
-  function calculateBasicUrgency(task: Task): number {
-    if (task.type !== 'recurring' || !task.recurringPattern?.nextDueDate) {
-      return 0
-    }
-
-    const nextDue = new Date(task.recurringPattern.nextDueDate)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    nextDue.setHours(0, 0, 0, 0)
-
-    const diffDays = Math.floor((today.getTime() - nextDue.getTime()) / (1000 * 60 * 60 * 24))
-    return diffDays // Positive = overdue, Negative = future
-  }
-
-  /**
-   * Generate human-readable reason for suggestion
-   */
-  function generateReason(task: Task, context: SuggestionContext): string {
-    const reasons: string[] = []
-
-    // Time fit
-    const percentOfTime = Math.round((task.timeEstimateMinutes / context.availableTimeMinutes) * 100)
-    if (percentOfTime >= 80) {
-      reasons.push(`uses ${percentOfTime}% of your time`)
-    }
-
-    // Priority
-    if (task.priority >= 8) {
-      reasons.push('high priority')
-    }
-
-    // Urgency for recurring tasks
-    if (task.type === 'recurring' && task.recurringPattern?.nextDueDate) {
-      const urgency = calculateBasicUrgency(task)
-      if (urgency > 0) {
-        reasons.push(`${urgency} day${urgency === 1 ? '' : 's'} overdue`)
-      } else if (urgency === 0) {
-        reasons.push('due today')
-      }
-    }
-
-    // Deadline
-    if (task.deadline) {
-      const daysUntil = Math.ceil((new Date(task.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-      if (daysUntil <= 1) {
-        reasons.push('deadline today')
-      } else if (daysUntil <= 3) {
-        reasons.push(`deadline in ${daysUntil} days`)
-      }
-    }
-
-    return reasons.length > 0 ? reasons.join(', ') : 'fits your available time'
   }
 
   /**

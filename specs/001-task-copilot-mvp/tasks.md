@@ -127,39 +127,39 @@
 
 ### Tests for User Story 2 (Write FIRST - must FAIL before implementation) ⚠️
 
-- [ ] T049a [P] [US2] Unit test: scoring algorithm returns normalized 0-1 scores in tests/unit/services/scoring.test.ts
-- [ ] T049b [P] [US2] Unit test: scoring uses equal weighting for all factors in tests/unit/services/scoring.test.ts
-- [ ] T049c [P] [US2] Unit test: urgency tiebreaker sorts correctly when scores are equal in tests/unit/services/scoring.test.ts
-- [ ] T049d [P] [US2] Unit test: calculateUrgency returns positive for overdue, negative for future in tests/unit/services/urgency.test.ts
-- [ ] T049e [P] [US2] Integration test: suggestionStore filters tasks exceeding available time in tests/integration/stores/suggestionStore.test.ts
-- [ ] T049f [P] [US2] Integration test: suggestionStore excludes tasks with incomplete dependencies in tests/integration/stores/suggestionStore.test.ts
-- [ ] T049g [P] [US2] Integration test: suggestionStore returns max 5 suggestions sorted by score in tests/integration/stores/suggestionStore.test.ts
-- [ ] T049h [P] [US2] Integration test: completing task A makes dependent task B available in tests/integration/stores/suggestionStore.test.ts
-- [ ] T049i [P] [US2] Integration test: completing recurring task resets urgency and calculates new nextDueDate in tests/integration/stores/taskStore.test.ts
-- [ ] T049j [P] [US2] E2E test: user enters time and sees 3-5 suggestions in tests/e2e/suggestions.spec.ts
-- [ ] T049k [P] [US2] E2E test: user marks suggestion complete and it disappears from list in tests/e2e/suggestions.spec.ts
-- [ ] T049l [P] [US2] E2E test: suggestion cards show reason explanations in tests/e2e/suggestions.spec.ts
-- [ ] T049m [P] [US2] E2E test: no tasks match time shows appropriate message in tests/e2e/suggestions.spec.ts
+- [X] T049a [P] [US2] Unit test: scoring algorithm returns normalized 0-1 scores in tests/unit/services/scoring.test.ts
+- [X] T049b [P] [US2] Unit test: scoring uses equal weighting for all factors in tests/unit/services/scoring.test.ts
+- [X] T049c [P] [US2] Unit test: urgency tiebreaker sorts correctly when scores are equal in tests/unit/services/scoring.test.ts
+- [X] T049d [P] [US2] Unit test: calculateUrgency returns positive for overdue, negative for future in tests/unit/services/urgency.test.ts
+- [X] T049e [P] [US2] Integration test: suggestionStore filters tasks exceeding available time in tests/integration/stores/suggestionStore.test.ts
+- [X] T049f [P] [US2] Integration test: suggestionStore excludes tasks with incomplete dependencies in tests/integration/stores/suggestionStore.test.ts
+- [X] T049g [P] [US2] Integration test: suggestionStore returns max 5 suggestions sorted by score in tests/integration/stores/suggestionStore.test.ts
+- [X] T049h [P] [US2] Integration test: completing task A makes dependent task B available in tests/integration/stores/suggestionStore.test.ts
+- [X] T049i [P] [US2] Integration test: completing recurring task resets urgency and calculates new nextDueDate in tests/integration/stores/taskStore.test.ts
+- [X] T049j [P] [US2] E2E test: user enters time and sees 3-5 suggestions in tests/e2e/suggestions.spec.ts
+- [X] T049k [P] [US2] E2E test: user marks suggestion complete and it disappears from list in tests/e2e/suggestions.spec.ts
+- [X] T049l [P] [US2] E2E test: suggestion cards show reason explanations in tests/e2e/suggestions.spec.ts
+- [X] T049m [P] [US2] E2E test: no tasks match time shows appropriate message in tests/e2e/suggestions.spec.ts
 
 ### Implementation for User Story 2
 
-- [ ] T049 [P] [US2] Create scoring algorithm in src/services/scoring.ts (equal-weighted factors per research.md)
-- [ ] T050 [P] [US2] Implement urgency calculation in src/services/urgency.ts (linear decay: daysOverdue for recurring tasks)
-- [ ] T051 [US2] Implement suggestion generation logic in src/stores/suggestionStore.ts (filter by time, score, rank)
-- [ ] T052 [US2] Add dependency filtering in src/stores/suggestionStore.ts (exclude tasks with incomplete dependencies)
-- [ ] T053 [US2] Implement suggestion session storage in src/stores/suggestionStore.ts (save to suggestionSessions table)
-- [ ] T054 [US2] Add task completion action in src/stores/taskStore.ts (mark complete, remove from suggestions)
-- [ ] T055 [US2] Implement recurring task completion logic (calculate next due date, reset urgency) in src/stores/taskStore.ts
-- [ ] T056 [US2] Handle edge case: no tasks match available time (return message "No tasks fit in X minutes")
-- [ ] T057 [P] [US2] Create TimeInput component in src/components/suggestions/TimeInput.vue (declare available minutes)
-- [ ] T058 [P] [US2] Create SuggestionCard component in src/components/suggestions/SuggestionCard.vue (task name, time, urgency, reason)
-- [ ] T059 [P] [US2] Create SuggestionList component in src/components/suggestions/SuggestionList.vue (display 3-5 suggestions)
-- [ ] T060 [US2] Implement SuggestionsView in src/views/SuggestionsView.vue with TimeInput and SuggestionList
-- [ ] T061 [US2] Add "Mark Complete" action button in SuggestionCard component
-- [ ] T062 [US2] Add suggestion reason explanations in SuggestionCard (e.g., "overdue by 2 days", "fits your 30-minute window")
-- [ ] T063 [US2] Verify dependency chain completion (when Task A completes, dependent Task B becomes available)
-- [ ] T064 [P] [US2] Style TimeInput with Tailwind CSS mobile-first design and touch targets
-- [ ] T065 [P] [US2] Style SuggestionCard and SuggestionList with Tailwind CSS
+- [X] T049 [P] [US2] Create scoring algorithm in src/services/scoring.ts (equal-weighted factors per research.md)
+- [X] T050 [P] [US2] Implement urgency calculation in src/services/urgency.ts (linear decay: daysOverdue for recurring tasks)
+- [X] T051 [US2] Implement suggestion generation logic in src/stores/suggestionStore.ts (filter by time, score, rank)
+- [X] T052 [US2] Add dependency filtering in src/stores/suggestionStore.ts (exclude tasks with incomplete dependencies)
+- [X] T053 [US2] Implement suggestion session storage in src/stores/suggestionStore.ts (save to suggestionSessions table)
+- [X] T054 [US2] Add task completion action in src/stores/taskStore.ts (mark complete, remove from suggestions)
+- [X] T055 [US2] Implement recurring task completion logic (calculate next due date, reset urgency) in src/stores/taskStore.ts
+- [X] T056 [US2] Handle edge case: no tasks match available time (return message "No tasks fit in X minutes")
+- [X] T057 [P] [US2] Create TimeInput component in src/components/suggestions/TimeInput.vue (declare available minutes)
+- [X] T058 [P] [US2] Create SuggestionCard component in src/components/suggestions/SuggestionCard.vue (task name, time, urgency, reason)
+- [X] T059 [P] [US2] Create SuggestionList component in src/components/suggestions/SuggestionList.vue (display 3-5 suggestions)
+- [X] T060 [US2] Implement SuggestionsView in src/views/SuggestionsView.vue with TimeInput and SuggestionList
+- [X] T061 [US2] Add "Mark Complete" action button in SuggestionCard component
+- [X] T062 [US2] Add suggestion reason explanations in SuggestionCard (e.g., "overdue by 2 days", "fits your 30-minute window")
+- [X] T063 [US2] Verify dependency chain completion (when Task A completes, dependent Task B becomes available)
+- [X] T064 [P] [US2] Style TimeInput with Tailwind CSS mobile-first design and touch targets
+- [X] T065 [P] [US2] Style SuggestionCard and SuggestionList with Tailwind CSS
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - core MVP is complete
 
