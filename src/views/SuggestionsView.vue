@@ -1,34 +1,83 @@
 <script setup lang="ts">
-// SuggestionsView - placeholder for User Story 2
+/**
+ * SuggestionsView - Time-based task suggestions
+ * Per tasks.md T060 - implements suggestion generation flow
+ */
+
+import { ref, onMounted } from 'vue'
+import { useSuggestionStore } from '@/stores/suggestionStore'
+import { useTaskStore } from '@/stores/taskStore'
+import { TimeInput, SuggestionList } from '@/components/suggestions'
+import type { EffortLevel, Location } from '@/types/task'
+
+const suggestionStore = useSuggestionStore()
+const taskStore = useTaskStore()
+
+const hasGenerated = ref(false)
+
+onMounted(async () => {
+  // Ensure tasks are loaded
+  if (taskStore.tasks.length === 0) {
+    await taskStore.loadTasks()
+  }
+})
+
+async function handleSubmit(input: {
+  availableTimeMinutes: number
+  effortLevel?: EffortLevel
+  location?: Location
+}) {
+  hasGenerated.value = true
+  
+  await suggestionStore.generateSuggestions({
+    availableTimeMinutes: input.availableTimeMinutes,
+    contextFilters: input.effortLevel || input.location
+      ? {
+          effortLevel: input.effortLevel,
+          location: input.location
+        }
+      : undefined
+  })
+}
+
+async function handleComplete(taskId: number) {
+  await taskStore.complete(taskId)
+  await suggestionStore.recordAction(taskId, 'completed')
+  
+  // Re-generate suggestions if we have context
+  if (suggestionStore.lastContext) {
+    await suggestionStore.generateSuggestions(suggestionStore.lastContext)
+  }
+}
+
+async function handleDismiss(taskId: number) {
+  await suggestionStore.recordAction(taskId, 'dismissed')
+  
+  // Remove from current suggestions
+  const index = suggestionStore.currentSuggestions.findIndex(s => s.taskId === taskId)
+  if (index !== -1) {
+    suggestionStore.currentSuggestions.splice(index, 1)
+  }
+}
 </script>
 
 <template>
   <div class="pb-20">
     <h2 class="text-2xl font-bold text-gray-900 mb-6">Get Suggestions</h2>
 
-    <div class="rounded-lg bg-white p-6 shadow mb-6">
-      <label for="available-time" class="block text-sm font-medium text-gray-700 mb-2">
-        How much time do you have?
-      </label>
-      <div class="flex items-center gap-4">
-        <input
-          id="available-time"
-          type="number"
-          min="1"
-          max="480"
-          placeholder="30"
-          class="touch-target block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-center text-lg"
-        />
-        <span class="text-gray-600">minutes</span>
-        <button
-          class="touch-target ml-auto rounded-md bg-primary-600 px-4 py-2 text-white font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-        >
-          Get Ideas
-        </button>
-      </div>
+    <!-- Time Input -->
+    <div class="mb-6">
+      <TimeInput
+        :loading="suggestionStore.loading"
+        @submit="handleSubmit"
+      />
     </div>
 
-    <div class="rounded-lg bg-white p-8 text-center shadow">
+    <!-- Initial State (before generating) -->
+    <div
+      v-if="!hasGenerated && !suggestionStore.loading"
+      class="rounded-lg bg-white p-8 text-center shadow"
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         class="mx-auto h-12 w-12 text-gray-400"
@@ -47,6 +96,33 @@
       <p class="mt-2 text-gray-500">
         Tell us how much time you have, and we'll suggest the best tasks to work on.
       </p>
+    </div>
+
+    <!-- Suggestions List -->
+    <SuggestionList
+      v-else
+      :suggestions="suggestionStore.currentSuggestions"
+      :loading="suggestionStore.loading"
+      :message="suggestionStore.message"
+      @complete="handleComplete"
+      @dismiss="handleDismiss"
+    />
+
+    <!-- Error State -->
+    <div
+      v-if="suggestionStore.error"
+      class="mt-4 rounded-md bg-red-50 p-4"
+    >
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm text-red-700">{{ suggestionStore.error }}</p>
+        </div>
+      </div>
     </div>
   </div>
 </template>
