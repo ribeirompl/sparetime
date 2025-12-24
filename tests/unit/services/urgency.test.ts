@@ -12,14 +12,14 @@ import type { Task } from '@/types/task'
  */
 function createTestTask(overrides: Partial<Task> = {}): Task {
   return {
-    id: 1,
+    id: 'test-task-1',
     name: 'Test Task',
     type: 'one-off',
     timeEstimateMinutes: 30,
     effortLevel: 'medium',
     location: 'home',
     status: 'active',
-    priority: 5,
+    priority: 'important',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     ...overrides

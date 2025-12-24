@@ -5,7 +5,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { validateTask, detectCircularDependency } from '@/utils/validation'
-import type { CreateTaskInput, Task } from '@/types/task'
+import type { CreateTaskInput, Task, Priority } from '@/types/task'
 
 describe('validateTask', () => {
   // Helper to create valid base input
@@ -15,7 +15,7 @@ describe('validateTask', () => {
     timeEstimateMinutes: 30,
     effortLevel: 'medium',
     location: 'home',
-    priority: 5
+    priority: 'important'
   }
 
   describe('T032a: time estimate validation', () => {
@@ -139,7 +139,7 @@ describe('validateTask', () => {
         timeEstimateMinutes: 0,
         effortLevel: undefined as unknown as 'low',
         location: undefined as unknown as 'home',
-        priority: 5
+        priority: 'important' as Priority
       }
       const result = validateTask(input)
 
@@ -177,31 +177,30 @@ describe('validateTask', () => {
   })
 
   describe('priority validation', () => {
-    it('rejects priority below 0', () => {
-      const input = { ...validInput, priority: -1 }
+    it('rejects invalid priority value', () => {
+      const input = { ...validInput, priority: 'urgent' as Priority }
       const result = validateTask(input)
 
       expect(result.valid).toBe(false)
       expect(result.errors.some((e) => e.toLowerCase().includes('priority'))).toBe(true)
     })
 
-    it('rejects priority above 10', () => {
-      const input = { ...validInput, priority: 11 }
-      const result = validateTask(input)
-
-      expect(result.valid).toBe(false)
-      expect(result.errors.some((e) => e.toLowerCase().includes('priority'))).toBe(true)
-    })
-
-    it('accepts priority of 0', () => {
-      const input = { ...validInput, priority: 0 }
+    it('accepts priority of optional', () => {
+      const input = { ...validInput, priority: 'optional' as Priority }
       const result = validateTask(input)
 
       expect(result.valid).toBe(true)
     })
 
-    it('accepts priority of 10', () => {
-      const input = { ...validInput, priority: 10 }
+    it('accepts priority of important', () => {
+      const input = { ...validInput, priority: 'important' as Priority }
+      const result = validateTask(input)
+
+      expect(result.valid).toBe(true)
+    })
+
+    it('accepts priority of critical', () => {
+      const input = { ...validInput, priority: 'critical' as Priority }
       const result = validateTask(input)
 
       expect(result.valid).toBe(true)
@@ -211,7 +210,7 @@ describe('validateTask', () => {
 
 describe('T032d: detectCircularDependency', () => {
   // Helper to create tasks with IDs
-  function createTask(id: number, dependsOnId?: number): Task {
+  function createTask(id: string, dependsOnId?: string): Task {
     return {
       id,
       name: `Task ${id}`,
@@ -220,7 +219,7 @@ describe('T032d: detectCircularDependency', () => {
       effortLevel: 'medium',
       location: 'home',
       status: 'active',
-      priority: 5,
+      priority: 'important',
       dependsOnId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -230,64 +229,64 @@ describe('T032d: detectCircularDependency', () => {
   it('returns true for A→B→A circular chain', () => {
     // Task 1 depends on Task 2, Task 2 depends on Task 1
     const tasks: Task[] = [
-      createTask(1, 2), // Task 1 depends on Task 2
-      createTask(2) // Task 2 has no dependency yet
+      createTask('1', '2'), // Task 1 depends on Task 2
+      createTask('2') // Task 2 has no dependency yet
     ]
 
     // If we try to make Task 2 depend on Task 1, it creates a cycle
-    const wouldCreateCycle = detectCircularDependency(2, 1, tasks)
+    const wouldCreateCycle = detectCircularDependency('2', '1', tasks)
 
     expect(wouldCreateCycle).toBe(true)
   })
 
   it('returns true for A→B→C→A longer chain', () => {
     const tasks: Task[] = [
-      createTask(1, 2), // 1 → 2
-      createTask(2, 3), // 2 → 3
-      createTask(3) // 3 has no dependency yet
+      createTask('1', '2'), // 1 → 2
+      createTask('2', '3'), // 2 → 3
+      createTask('3') // 3 has no dependency yet
     ]
 
     // If we try to make Task 3 depend on Task 1, it creates a cycle
-    const wouldCreateCycle = detectCircularDependency(3, 1, tasks)
+    const wouldCreateCycle = detectCircularDependency('3', '1', tasks)
 
     expect(wouldCreateCycle).toBe(true)
   })
 
   it('returns true when task depends on itself', () => {
-    const tasks: Task[] = [createTask(1)]
+    const tasks: Task[] = [createTask('1')]
 
     // Task 1 trying to depend on itself
-    const wouldCreateCycle = detectCircularDependency(1, 1, tasks)
+    const wouldCreateCycle = detectCircularDependency('1', '1', tasks)
 
     expect(wouldCreateCycle).toBe(true)
   })
 
   it('returns false for valid dependency chain', () => {
     const tasks: Task[] = [
-      createTask(1), // No dependency
-      createTask(2, 1) // 2 depends on 1
+      createTask('1'), // No dependency
+      createTask('2', '1') // 2 depends on 1
     ]
 
     // Task 3 depending on Task 2 is fine (chain: 3 → 2 → 1)
-    const wouldCreateCycle = detectCircularDependency(3, 2, tasks)
+    const wouldCreateCycle = detectCircularDependency('3', '2', tasks)
 
     expect(wouldCreateCycle).toBe(false)
   })
 
   it('returns false for new task with dependency', () => {
-    const tasks: Task[] = [createTask(1), createTask(2)]
+    const tasks: Task[] = [createTask('1'), createTask('2')]
 
     // New task (undefined ID) depending on existing task
-    const wouldCreateCycle = detectCircularDependency(undefined, 1, tasks)
+    const wouldCreateCycle = detectCircularDependency(undefined, '1', tasks)
 
     expect(wouldCreateCycle).toBe(false)
   })
 
   it('returns false when no dependencies exist', () => {
-    const tasks: Task[] = [createTask(1), createTask(2), createTask(3)]
+    const tasks: Task[] = [createTask('1'), createTask('2'), createTask('3')]
 
     // No existing dependencies, so no cycle possible
-    const wouldCreateCycle = detectCircularDependency(2, 1, tasks)
+    const wouldCreateCycle = detectCircularDependency('2', '1', tasks)
 
     expect(wouldCreateCycle).toBe(false)
   })

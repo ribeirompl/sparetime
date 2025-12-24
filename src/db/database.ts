@@ -12,7 +12,7 @@ import Dexie, { type Table } from 'dexie'
 import type { Task } from '@/types/task'
 import type { SuggestionSession } from '@/types/suggestion'
 import type { SyncState } from '@/types/sync'
-import { SCHEMA_VERSION_1, CURRENT_SCHEMA_VERSION } from './schema'
+import { SCHEMA_VERSION_1, SCHEMA_VERSION_2, CURRENT_SCHEMA_VERSION, migrateNumericPriority } from './schema'
 
 /**
  * SpareTime Database class
@@ -33,6 +33,18 @@ export class SparetimeDatabase extends Dexie {
 
     // Version 1 - UUID-based IDs with soft delete support
     this.version(1).stores(SCHEMA_VERSION_1)
+
+    // Version 2 - Priority changed from number to enum
+    this.version(2)
+      .stores(SCHEMA_VERSION_2)
+      .upgrade(async (trans) => {
+        // Migrate all tasks: convert numeric priority to enum
+        await trans.table('tasks').toCollection().modify((task: { priority: number | string }) => {
+          if (typeof task.priority === 'number') {
+            task.priority = migrateNumericPriority(task.priority)
+          }
+        })
+      })
   }
 }
 

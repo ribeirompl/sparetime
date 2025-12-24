@@ -7,6 +7,7 @@
 import { computed } from 'vue'
 import { useSyncStore } from '@/stores/syncStore'
 import { useTaskStore } from '@/stores/taskStore'
+import { formatDateTimeLocale } from '@/utils/dateHelpers'
 import type { SyncConflict } from '@/types/sync'
 import type { Task } from '@/types/task'
 
@@ -28,13 +29,7 @@ async function resolveWithRemote(conflict: SyncConflict): Promise<void> {
 }
 
 function formatDate(dateStr: string | Date): string {
-  const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr
-  return date.toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
+  return formatDateTimeLocale(dateStr)
 }
 
 function formatRelativeTime(dateStr: string): string {
@@ -99,6 +94,15 @@ function getLocationLabel(location: string): string {
   }
 }
 
+function getPriorityLabel(priority: string): string {
+  switch (priority) {
+    case 'critical': return '🔥 Critical'
+    case 'important': return '⭐ Important'
+    case 'optional': return '💤 Optional'
+    default: return priority
+  }
+}
+
 function getTypeLabel(type: string): string {
   switch (type) {
     case 'one-off': return '☑️ One-off'
@@ -139,7 +143,7 @@ function findDifferences(local: Task, remote: Task): Array<{ field: string; loca
     diffs.push({ field: 'Location', localValue: getLocationLabel(local.location), remoteValue: getLocationLabel(remote.location) })
   }
   if (local.priority !== remote.priority) {
-    diffs.push({ field: 'Priority', localValue: `${local.priority}/10`, remoteValue: `${remote.priority}/10` })
+    diffs.push({ field: 'Priority', localValue: getPriorityLabel(local.priority), remoteValue: getPriorityLabel(remote.priority) })
   }
   if (local.deadline !== remote.deadline) {
     diffs.push({ 
@@ -255,7 +259,7 @@ function findDifferences(local: Task, remote: Task): Array<{ field: string; loca
             <div class="version-meta">
               <span>{{ getEffortLabel(conflict.localData.effortLevel) }}</span>
               <span>{{ getLocationLabel(conflict.localData.location) }}</span>
-              <span>Priority: {{ conflict.localData.priority }}/10</span>
+              <span>{{ getPriorityLabel(conflict.localData.priority) }}</span>
             </div>
             <div v-if="conflict.localData.dependsOnId" class="version-meta">
               <span>🔗 Depends on: {{ getTaskNameById(conflict.localData.dependsOnId) }}</span>
@@ -289,7 +293,7 @@ function findDifferences(local: Task, remote: Task): Array<{ field: string; loca
             <div class="version-meta">
               <span>{{ getEffortLabel(conflict.remoteData.effortLevel) }}</span>
               <span>{{ getLocationLabel(conflict.remoteData.location) }}</span>
-              <span>Priority: {{ conflict.remoteData.priority }}/10</span>
+              <span>{{ getPriorityLabel(conflict.remoteData.priority) }}</span>
             </div>
             <div v-if="conflict.remoteData.dependsOnId" class="version-meta">
               <span>🔗 Depends on: {{ getTaskNameById(conflict.remoteData.dependsOnId) }}</span>

@@ -248,11 +248,14 @@ export const useSyncStore = defineStore('sync', () => {
       await initializeSyncState()
     }
 
+    // Deep clone the data to avoid Vue proxy issues with IndexedDB
+    const clonedData = data ? JSON.parse(JSON.stringify(toRaw(data))) as Task : undefined
+
     const change: PendingChange = {
       taskId,
       operation,
       timestamp: nowISO(),
-      data
+      data: clonedData
     }
 
     const pendingChanges = [...toRaw(syncState.value!.pendingChanges), change]
@@ -317,7 +320,7 @@ export const useSyncStore = defineStore('sync', () => {
       existingConflict.localData = localTask
       existingConflict.remoteData = remoteTask
       existingConflict.detectedAt = nowISO()
-      
+
       await db.syncState.put({
         id: 1,
         pendingChanges: toRaw(syncState.value!.pendingChanges),
@@ -370,16 +373,17 @@ export const useSyncStore = defineStore('sync', () => {
 
     // Update the resolved task with current timestamp to ensure it's "newer" than remote
     const now = nowISO()
-    const taskWithUpdatedTimestamp = {
+    // Deep clone to avoid DataCloneError with nested Vue proxies (e.g., unknown dependencies)
+    const taskWithUpdatedTimestamp = JSON.parse(JSON.stringify({
       ...resolvedTask,
       updatedAt: now
-    }
+    }))
 
     // Always update local task with the resolved version and new timestamp
     await db.tasks.put(taskWithUpdatedTimestamp)
 
     syncState.value.conflicts = remainingConflicts
-    
+
     // Use the conflict's detectedAt as the lastSyncedAt
     // This is when we last successfully compared with remote, so any changes
     // AFTER this time are new and need to be synced. Using 'now' would risk
@@ -655,7 +659,7 @@ export const useSyncStore = defineStore('sync', () => {
         // Add conflicts to state, avoiding duplicates
         const existingConflicts = toRaw(syncState.value?.conflicts ?? [])
         const existingConflictIds = new Set(existingConflicts.map(c => c.taskId))
-        
+
         // Only add conflicts for tasks that don't already have conflicts
         const conflictsToAdd = newConflicts.filter(c => !existingConflictIds.has(c.taskId))
         const allConflicts = [...existingConflicts, ...conflictsToAdd]
@@ -698,19 +702,19 @@ export const useSyncStore = defineStore('sync', () => {
       }
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'Sync failed'
-      
+
       // Check if this is an auth error and we haven't retried yet
       if (!isRetry && (errorMessage.includes('authentication expired') || errorMessage.includes('401') || errorMessage.includes('403'))) {
         console.log('Auth error detected, attempting silent token refresh...')
         const newToken = await refreshTokenSilently()
-        
+
         if (newToken) {
           console.log('Token refreshed successfully, retrying sync...')
           // Retry the sync with the new token
           return performSync(true)
         }
       }
-      
+
       error.value = errorMessage
       syncStatus.value = 'error'
       console.error('Sync failed:', e)

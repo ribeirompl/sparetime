@@ -34,7 +34,7 @@ describe('suggestionStore integration with IndexedDB', () => {
     timeEstimateMinutes: 30,
     effortLevel: 'medium',
     location: 'home',
-    priority: 5,
+    priority: 'important',
     ...overrides
   })
 
@@ -175,13 +175,14 @@ describe('suggestionStore integration with IndexedDB', () => {
       const taskStore = useTaskStore()
       const suggestionStore = useSuggestionStore()
 
-      // Create 10 tasks
+      // Create 10 tasks with different priorities
+      const priorities: ('optional' | 'important' | 'critical')[] = ['optional', 'optional', 'optional', 'important', 'important', 'important', 'important', 'critical', 'critical', 'critical']
       for (let i = 1; i <= 10; i++) {
         await taskStore.create(
           createValidInput({
             name: `Task ${i}`,
             timeEstimateMinutes: 30,
-            priority: i // Different priorities
+            priority: priorities[i - 1] // Different priorities
           })
         )
       }
@@ -199,13 +200,13 @@ describe('suggestionStore integration with IndexedDB', () => {
 
       // Create tasks with different priorities
       await taskStore.create(
-        createValidInput({ name: 'Low Priority', timeEstimateMinutes: 30, priority: 1 })
+        createValidInput({ name: 'Low Priority', timeEstimateMinutes: 30, priority: 'optional' })
       )
       await taskStore.create(
-        createValidInput({ name: 'High Priority', timeEstimateMinutes: 30, priority: 10 })
+        createValidInput({ name: 'High Priority', timeEstimateMinutes: 30, priority: 'critical' })
       )
       await taskStore.create(
-        createValidInput({ name: 'Medium Priority', timeEstimateMinutes: 30, priority: 5 })
+        createValidInput({ name: 'Medium Priority', timeEstimateMinutes: 30, priority: 'important' })
       )
 
       const result = await suggestionStore.generateSuggestions(
@@ -357,7 +358,7 @@ describe('T049i: completing recurring task resets urgency and calculates new nex
     timeEstimateMinutes: 30,
     effortLevel: 'medium',
     location: 'home',
-    priority: 5,
+    priority: 'important',
     ...overrides
   })
 
@@ -466,7 +467,7 @@ describe('T066d-f: suggestionStore filters by effort level and location', () => 
     timeEstimateMinutes: 30,
     effortLevel: 'medium',
     location: 'home',
-    priority: 5,
+    priority: 'important',
     ...overrides
   })
 
@@ -638,7 +639,7 @@ describe('T074d: overdue tasks rank higher than due-today tasks', () => {
     timeEstimateMinutes: 30,
     effortLevel: 'medium',
     location: 'home',
-    priority: 5,
+    priority: 'important',
     ...overrides
   })
 
@@ -653,7 +654,7 @@ describe('T074d: overdue tasks rank higher than due-today tasks', () => {
       createValidInput({
         name: 'Due Today',
         type: 'recurring',
-        priority: 5,
+        priority: 'important',
         recurringPattern: {
           intervalValue: 7,
           intervalUnit: 'days',
@@ -667,7 +668,7 @@ describe('T074d: overdue tasks rank higher than due-today tasks', () => {
       createValidInput({
         name: 'Overdue Task',
         type: 'recurring',
-        priority: 5, // Same priority
+        priority: 'important', // Same priority
         recurringPattern: {
           intervalValue: 7,
           intervalUnit: 'days',

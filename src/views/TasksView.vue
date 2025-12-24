@@ -63,39 +63,50 @@ function setTypeFilter(type: TaskType | 'all') {
 </script>
 
 <template>
-  <div data-testid="tasks-view" class="pb-20">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
-      <h2 class="text-2xl font-bold text-gray-900">My Tasks</h2>
-      <button
-        data-testid="add-task-button"
-        class="touch-target btn-primary flex items-center justify-center gap-1.5 rounded-full px-4 py-2.5 font-medium shadow-md"
-        @click="openAddForm"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+  <div data-testid="tasks-view" class="flex flex-col">
+    <!-- Header Section -->
+    <div class="pb-3 mx-2">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-xl font-bold text-gray-900">My Tasks</h2>
+        <button
+          data-testid="add-task-button"
+          class="touch-target btn-primary flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium shadow-sm cursor-pointer"
+          @click="openAddForm"
         >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        <span>Add Task</span>
-      </button>
-    </div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Add Task</span>
+        </button>
+      </div>
 
-    <!-- Filter tabs -->
-    <div class="flex gap-2 mb-4 overflow-x-auto pb-2">
-      <button
-        v-for="type in (['all', 'one-off', 'recurring', 'project'] as const)"
-        :key="type"
-        class="touch-target filter-pill px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap"
-        :class="filterType === type ? 'filter-pill-active' : 'filter-pill-inactive'"
-        @click="setTypeFilter(type)"
-      >
-        {{ type === 'all' ? 'All' : type === 'one-off' ? 'One-Off' : type === 'recurring' ? 'Recurring' : 'Projects' }}
-      </button>
+      <!-- Filter tabs with subtle background -->
+      <div class="flex items-center gap-1.5 overflow-x-auto bg-gray-100 rounded-lg p-1">
+        <button
+          class="touch-target filter-pill px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap cursor-pointer transition-colors"
+          :class="filterType === 'all' ? 'filter-pill-active' : 'filter-pill-inactive bg-transparent hover:bg-gray-200'"
+          @click="setTypeFilter('all')"
+        >
+          All
+        </button>
+        <!-- Vertical divider -->
+        <div class="w-px h-6 bg-gray-300"></div>
+        <button
+          v-for="type in (['one-off', 'recurring', 'project'] as const)"
+          :key="type"
+          class="touch-target filter-pill px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap cursor-pointer transition-colors"
+          :class="filterType === type ? 'filter-pill-active' : 'filter-pill-inactive bg-transparent hover:bg-gray-200'"
+          @click="setTypeFilter(type)"
+        >
+          {{ type === 'one-off' ? 'One-Off' : type === 'recurring' ? 'Recurring' : 'Projects' }}
+        </button>
+      </div>
     </div>
 
     <!-- Error display -->
@@ -115,16 +126,18 @@ function setTypeFilter(type: TaskType | 'all') {
     </div>
 
     <!-- Task list -->
-    <TaskList
-      v-else
-      :tasks="tasks"
-      :filter-type="filterType"
-      :filter-status="filterStatus"
-      empty-message="No tasks yet. Add your first task to get started!"
-      @task-click="openEditForm"
-      @task-complete="handleComplete"
-      @task-delete="handleDelete"
-    />
+    <div class="pt-2">
+      <TaskList
+        v-if="!loading"
+        :tasks="tasks"
+        :filter-type="filterType"
+        :filter-status="filterStatus"
+        empty-message="No tasks yet. Add your first task to get started!"
+        @task-click="openEditForm"
+        @task-complete="handleComplete"
+        @task-delete="handleDelete"
+      />
+    </div>
 
     <!-- Task Form Modal -->
     <TaskForm

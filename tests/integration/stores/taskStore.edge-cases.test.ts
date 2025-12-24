@@ -33,7 +33,7 @@ describe('TaskStore Edge Cases', () => {
         effortLevel: 'medium',
         location: 'home',
         status: 'active',
-        priority: 5,
+        priority: 'important',
         createdAt: nowISO(),
         updatedAt: nowISO(),
         deletedAt: old.toISOString()
@@ -47,7 +47,7 @@ describe('TaskStore Edge Cases', () => {
         effortLevel: 'medium',
         location: 'home',
         status: 'active',
-        priority: 5,
+        priority: 'important',
         createdAt: nowISO(),
         updatedAt: nowISO(),
         deletedAt: recent.toISOString()
@@ -61,7 +61,7 @@ describe('TaskStore Edge Cases', () => {
         effortLevel: 'medium',
         location: 'home',
         status: 'active',
-        priority: 5,
+        priority: 'important',
         createdAt: nowISO(),
         updatedAt: nowISO()
       }
@@ -93,7 +93,7 @@ describe('TaskStore Edge Cases', () => {
         effortLevel: 'medium',
         location: 'home',
         status: 'active',
-        priority: 5,
+        priority: 'important',
         createdAt: nowISO(),
         updatedAt: nowISO()
       }
@@ -118,7 +118,7 @@ describe('TaskStore Edge Cases', () => {
         effortLevel: 'medium',
         location: 'home',
         status: 'active',
-        priority: 5,
+        priority: 'important',
         createdAt: nowISO(),
         updatedAt: nowISO()
       }
@@ -131,7 +131,7 @@ describe('TaskStore Edge Cases', () => {
         effortLevel: 'medium',
         location: 'home',
         status: 'active',
-        priority: 5,
+        priority: 'important',
         dependsOnId: 'dep-1',
         createdAt: nowISO(),
         updatedAt: nowISO()
@@ -154,7 +154,7 @@ describe('TaskStore Edge Cases', () => {
         effortLevel: 'medium',
         location: 'home',
         status: 'completed',
-        priority: 5,
+        priority: 'important',
         createdAt: nowISO(),
         updatedAt: nowISO()
       }
@@ -167,7 +167,7 @@ describe('TaskStore Edge Cases', () => {
         effortLevel: 'medium',
         location: 'home',
         status: 'active',
-        priority: 5,
+        priority: 'important',
         dependsOnId: 'dep-1',
         createdAt: nowISO(),
         updatedAt: nowISO()
@@ -190,7 +190,7 @@ describe('TaskStore Edge Cases', () => {
         effortLevel: 'medium',
         location: 'home',
         status: 'active',
-        priority: 5,
+        priority: 'important',
         createdAt: nowISO(),
         updatedAt: nowISO()
       }
@@ -212,7 +212,7 @@ describe('TaskStore Edge Cases', () => {
         effortLevel: 'medium',
         location: 'home',
         status: 'active',
-        priority: 5,
+        priority: 'important',
         dependsOnId: 'missing-dep',
         createdAt: nowISO(),
         updatedAt: nowISO()
@@ -237,7 +237,7 @@ describe('TaskStore Edge Cases', () => {
         effortLevel: 'medium',
         location: 'home',
         status: 'active',
-        priority: 5,
+        priority: 'important',
         createdAt: nowISO(),
         updatedAt: nowISO()
       }
@@ -261,7 +261,7 @@ describe('TaskStore Edge Cases', () => {
         effortLevel: 'medium',
         location: 'home',
         status: 'active',
-        priority: 5,
+        priority: 'important',
         createdAt: nowISO(),
         updatedAt: nowISO()
       }
@@ -292,7 +292,7 @@ describe('TaskStore Edge Cases', () => {
         timeEstimateMinutes: 30,
         effortLevel: 'medium',
         location: 'home',
-        priority: 5
+        priority: 'important'
       })
 
       expect(result).toBeUndefined()
@@ -310,7 +310,7 @@ describe('TaskStore Edge Cases', () => {
         timeEstimateMinutes: 30,
         effortLevel: 'medium',
         location: 'home',
-        priority: 5
+        priority: 'important'
       })
 
       expect(task1).toBeDefined()
@@ -323,7 +323,7 @@ describe('TaskStore Edge Cases', () => {
         timeEstimateMinutes: 30,
         effortLevel: 'medium',
         location: 'home',
-        priority: 5,
+        priority: 'important',
         dependsOnId: task1!.id
       })
 

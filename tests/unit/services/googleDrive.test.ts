@@ -15,14 +15,14 @@ import type { GoogleDriveBackup } from '@/types/sync'
 // Helper to create test tasks
 function createTestTask(overrides: Partial<Task> = {}): Task {
   return {
-    id: 1,
+    id: 'test-id-1',
     name: 'Test Task',
     type: 'one-off',
     timeEstimateMinutes: 30,
     effortLevel: 'medium',
     location: 'home',
     status: 'active',
-    priority: 5,
+    priority: 'important',
     createdAt: '2025-12-23T10:00:00.000Z',
     updatedAt: '2025-12-23T10:00:00.000Z',
     ...overrides
@@ -33,7 +33,7 @@ describe('Google Drive Service', () => {
   describe('T082c: GoogleDriveBackup JSON includes version, timestamp, checksum', () => {
     it('should include version field in backup payload', async () => {
       const tasks = [createTestTask()]
-      
+
       const backup = await createBackupPayload(tasks)
 
       expect(backup).toHaveProperty('version')
@@ -43,12 +43,12 @@ describe('Google Drive Service', () => {
 
     it('should include timestamp (exportTimestamp) field in backup payload', async () => {
       const tasks = [createTestTask()]
-      
+
       const backup = await createBackupPayload(tasks)
 
       expect(backup).toHaveProperty('exportTimestamp')
       expect(typeof backup.exportTimestamp).toBe('string')
-      
+
       // Should be valid ISO date string
       const date = new Date(backup.exportTimestamp)
       expect(date.getTime()).not.toBeNaN()
@@ -56,7 +56,7 @@ describe('Google Drive Service', () => {
 
     it('should include checksum field in backup payload', async () => {
       const tasks = [createTestTask()]
-      
+
       const backup = await createBackupPayload(tasks)
 
       expect(backup).toHaveProperty('checksum')
@@ -67,11 +67,11 @@ describe('Google Drive Service', () => {
 
     it('should include tasks array in backup payload', async () => {
       const tasks = [
-        createTestTask({ id: 1, name: 'Task 1' }),
-        createTestTask({ id: 2, name: 'Task 2' }),
-        createTestTask({ id: 3, name: 'Task 3' })
+        createTestTask({ id: 'task-1', name: 'Task 1' }),
+        createTestTask({ id: 'task-2', name: 'Task 2' }),
+        createTestTask({ id: 'task-3', name: 'Task 3' })
       ]
-      
+
       const backup = await createBackupPayload(tasks)
 
       expect(backup).toHaveProperty('tasks')
@@ -81,9 +81,9 @@ describe('Google Drive Service', () => {
     })
 
     it('should produce different checksum for different task data', async () => {
-      const tasks1 = [createTestTask({ id: 1, name: 'Task 1' })]
-      const tasks2 = [createTestTask({ id: 1, name: 'Task 2' })]
-      
+      const tasks1 = [createTestTask({ id: 'task-1', name: 'Task 1' })]
+      const tasks2 = [createTestTask({ id: 'task-1', name: 'Task 2' })]
+
       const backup1 = await createBackupPayload(tasks1)
       const backup2 = await createBackupPayload(tasks2)
 
@@ -92,7 +92,7 @@ describe('Google Drive Service', () => {
 
     it('should handle empty tasks array', async () => {
       const tasks: Task[] = []
-      
+
       const backup = await createBackupPayload(tasks)
 
       expect(backup.version).toBeGreaterThanOrEqual(1)
@@ -103,7 +103,7 @@ describe('Google Drive Service', () => {
 
     it('should preserve all task properties in backup', async () => {
       const task = createTestTask({
-        id: 42,
+        id: 'task-42',
         name: 'Complex Task',
         type: 'recurring',
         recurringPattern: {
@@ -113,9 +113,9 @@ describe('Google Drive Service', () => {
           nextDueDate: '2025-12-27T10:00:00.000Z'
         },
         deadline: '2025-12-31T23:59:59.000Z',
-        dependsOnId: 1
+        dependsOnId: 'task-1'
       })
-      
+
       const backup = await createBackupPayload([task])
 
       expect(backup.tasks[0]).toEqual(task)

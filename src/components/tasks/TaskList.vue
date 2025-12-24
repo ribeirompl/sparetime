@@ -36,6 +36,9 @@ const emit = defineEmits<{
 const filteredTasks = computed(() => {
   let result = props.tasks
 
+  // Always exclude soft-deleted tasks
+  result = result.filter((t) => !t.deletedAt)
+
   if (props.filterType !== 'all') {
     result = result.filter((t) => t.type === props.filterType)
   }

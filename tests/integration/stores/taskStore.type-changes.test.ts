@@ -25,7 +25,7 @@ describe('TaskStore - Type Changes', () => {
     timeEstimateMinutes: 30,
     effortLevel: 'medium',
     location: 'home',
-    priority: 5,
+    priority: 'important',
     ...overrides
   })
 

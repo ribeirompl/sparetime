@@ -17,12 +17,13 @@ As a busy person with limited free time, I need to quickly capture tasks (both o
 
 **Acceptance Scenarios**:
 
-1. **Given** I open the app for the first time, **When** I tap "Add Task", **Then** I see a form with fields for task name, type (one-off/recurring/project), time estimate (minutes), effort level (low/medium/high), location (home/outside/anywhere), priority (defaults to 5), and optional notes
-2. **Given** I'm adding a recurring task, **When** I select "recurring" type, **Then** I see additional fields for interval pattern (e.g., "every 5 days", "every 2 weeks", "every 1 month", "every 1 year") and last completed date (defaults to today's date)
-3. **Given** I'm adding a personal project, **When** I select "project" type, **Then** I can specify minimum session duration (the only mandatory field for projects), allowing work to be broken into repeatable chunks until the project is marked complete
-4. **Given** I've added multiple tasks, **When** I go offline and return to the app, **Then** all my tasks are still visible and editable
+1. **Given** I open the app for the first time, **When** I tap "Add Task", **Then** I see a form with fields for task name, type (one-off/recurring/project), time estimate (minutes with presets 15/30/60), effort level (low/medium/high), location (home/outside/anywhere), priority (defaults to 5), and optional notes
+2. **Given** I'm adding a recurring task, **When** I select "recurring" type, **Then** I see additional fields for interval pattern (e.g., "every 5 days", "every 2 weeks", "every 1 month", "every 1 year") and last completed date (defaults to today's date). The deadline field is hidden for recurring tasks.
+3. **Given** I'm adding a personal project, **When** I select "project" type, **Then** I can specify minimum session duration (the only mandatory field for projects), allowing work to be broken into repeatable chunks until the project is marked complete. The deadline field is hidden for projects.
+4. **Given** I'm adding a one-off task, **When** I select "one-off" type, **Then** I can optionally set a deadline date for the task
 5. **Given** I have an existing task, **When** I edit its time estimate or details, **Then** changes are saved immediately to IndexedDB
 6. **Given** I'm adding or editing a task, **When** I access task details, **Then** I can optionally specify that this task depends on another task being completed first
+7. **Given** I'm editing a one-off task with a deadline, **When** I change its type to recurring or project, **Then** the deadline field is cleared and hidden
 
 ---
 

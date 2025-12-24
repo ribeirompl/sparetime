@@ -313,11 +313,12 @@ export const useTaskStore = defineStore('task', () => {
 
     if (task.type === 'recurring' && task.recurringPattern) {
       // For recurring tasks: reset with new due date calculated from completion time
+      const rawPattern = toRaw(task.recurringPattern)
       const updatedPattern = {
-        ...task.recurringPattern,
+        ...rawPattern,
         lastCompletedDate: now,
         nextDueDate: calculateNextDueDateFromPattern({
-          ...task.recurringPattern,
+          ...rawPattern,
           lastCompletedDate: now
         })
       }

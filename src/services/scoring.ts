@@ -3,9 +3,10 @@
  * Per research.md - uses equal weighting for all factors with urgency tiebreaker
  */
 
-import type { Task } from '@/types/task'
+import type { Task, Priority } from '@/types/task'
 import type { SuggestionContext, ScoringFactors, TaskScore } from '@/types/suggestion'
 import { calculateUrgency, normalizeUrgency } from './urgency'
+import { toRaw } from 'vue'
 
 /**
  * Maximum days to consider for deadline proximity normalization
@@ -64,12 +65,17 @@ export function calculateScore(task: Task, context: SuggestionContext): number {
 export function calculateFactors(task: Task, context: SuggestionContext): ScoringFactors {
   const urgency = calculateUrgency(task)
 
+  // For project tasks, use minimum session duration instead of total time estimate
+  const effectiveTime = task.type === 'project' && task.projectSession
+    ? task.projectSession.minSessionDurationMinutes
+    : task.timeEstimateMinutes
+
   return {
     urgency,
     deadlineProximity: calculateDeadlineProximity(task),
     priority: normalizePriority(task.priority),
     postponements: calculatePostponementScore(task),
-    timeMatch: calculateTimeMatch(task.timeEstimateMinutes, context.availableTimeMinutes),
+    timeMatch: calculateTimeMatch(effectiveTime, context.availableTimeMinutes),
     effortMatch: calculateEffortMatch(task, context),
     locationMatch: calculateLocationMatch(task, context)
   }
@@ -133,10 +139,19 @@ function calculateDeadlineProximity(task: Task): number | null {
 }
 
 /**
- * Normalize priority (0-10) to 0-1 scale
+ * Normalize priority enum to 0-1 scale for scoring
+ * optional = 0.33, important = 0.66, critical = 1.0
  */
-function normalizePriority(priority: number): number {
-  return Math.max(0, Math.min(1, priority / 10))
+function normalizePriority(priority: Priority): number {
+  switch (priority) {
+    case 'critical':
+      return 1.0
+    case 'important':
+      return 0.66
+    case 'optional':
+    default:
+      return 0.33
+  }
 }
 
 /**
@@ -152,6 +167,7 @@ function calculatePostponementScore(_task: Task): number {
 /**
  * Calculate how well the task fits the available time (0-1)
  * Tasks that use more of the available time score higher
+ * For project tasks, uses minimum session duration instead of total time
  */
 function calculateTimeMatch(taskTime: number, availableTime: number): number {
   if (availableTime <= 0) {
@@ -209,7 +225,7 @@ export function scoreAndRankTasks(tasks: Task[], context: SuggestionContext): Ta
 
     return {
       taskId: task.id!,
-      task,
+      task: toRaw(task), // Convert to plain object to avoid DataCloneError in IndexedDB
       score,
       urgency: factors.urgency,
       reason: generateReason(task, context, factors),
@@ -227,15 +243,20 @@ export function scoreAndRankTasks(tasks: Task[], context: SuggestionContext): Ta
 function generateReason(task: Task, context: SuggestionContext, factors: ScoringFactors): string {
   const reasons: string[] = []
 
-  // Time fit
-  const percentOfTime = Math.round((task.timeEstimateMinutes / context.availableTimeMinutes) * 100)
+  // Time fit (use effective time for project tasks)
+  const effectiveTime = task.type === 'project' && task.projectSession
+    ? task.projectSession.minSessionDurationMinutes
+    : task.timeEstimateMinutes
+  const percentOfTime = Math.round((effectiveTime / context.availableTimeMinutes) * 100)
   if (percentOfTime >= 80) {
     reasons.push(`uses ${percentOfTime}% of your time`)
   }
 
   // Priority
-  if (task.priority >= 8) {
-    reasons.push('high priority')
+  if (task.priority === 'critical') {
+    reasons.push('critical priority')
+  } else if (task.priority === 'important') {
+    reasons.push('important')
   }
 
   // Urgency for recurring/deadline tasks
