@@ -22,11 +22,6 @@ import { scoreAndRankTasks } from '@/services/scoring'
 const MAX_SUGGESTIONS = 5
 
 /**
- * Minimum number of suggestions to aim for
- */
-const MIN_SUGGESTIONS = 3
-
-/**
  * Suggestion store for managing suggestion state and generation
  */
 export const useSuggestionStore = defineStore('suggestion', () => {
@@ -192,8 +187,8 @@ export const useSuggestionStore = defineStore('suggestion', () => {
    * Record action taken on a suggestion
    */
   async function recordAction(
-    taskId: string,
-    action: 'completed' | 'dismissed' | 'postponed'
+    _taskId: string,
+    _action: 'completed' | 'dismissed' | 'postponed'
   ): Promise<void> {
     // This would update the most recent session with the action taken
     // Implementation for tracking user behavior

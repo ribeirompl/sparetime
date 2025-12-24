@@ -6,7 +6,7 @@
  * Main view for User Story 1: Task CRUD with offline persistence
  */
 
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useTaskStore } from '@/stores/taskStore'
 import { TaskList, TaskForm } from '@/components/tasks'

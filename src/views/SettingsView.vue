@@ -138,7 +138,7 @@ async function confirmDelete(): Promise<void> {
         showSuccess(`Successfully deleted ${taskCount} tasks from this device.`)
         break
 
-      case 'cloud':
+      case 'cloud': {
         // Delete cloud backup only, preserve local data
         const token = syncStore.getAccessToken()
         if (token) {
@@ -148,8 +148,9 @@ async function confirmDelete(): Promise<void> {
           throw new Error('Not connected to Google Drive')
         }
         break
+      }
 
-      case 'both':
+      case 'both': {
         // Delete both local and cloud data
         const cloudToken = syncStore.getAccessToken()
         if (cloudToken) {
@@ -161,6 +162,7 @@ async function confirmDelete(): Promise<void> {
         await syncStore.loadSyncState()
         showSuccess(`Successfully deleted ${taskCount} tasks and cloud backup.`)
         break
+      }
     }
 
     showDeleteDialog.value = false

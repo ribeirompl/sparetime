@@ -24,7 +24,18 @@ export default [
         ArrayBuffer: 'readonly',
         Uint8Array: 'readonly',
         TextEncoder: 'readonly',
-        TextDecoder: 'readonly'
+        TextDecoder: 'readonly',
+        localStorage: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        Event: 'readonly',
+        alert: 'readonly',
+        URL: 'readonly',
+        fetch: 'readonly',
+        Blob: 'readonly',
+        confirm: 'readonly'
       }
     },
     plugins: {
@@ -32,8 +43,8 @@ export default [
       vue
     },
     rules: {
-      ...tseslint.configs.recommended.rules,
-      ...vue.configs['vue3-recommended'].rules,
+      ...tseslint.configs?.recommended?.rules || {},
+      ...vue.configs?.['vue3-recommended']?.rules || {},
       'vue/multi-word-component-names': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
