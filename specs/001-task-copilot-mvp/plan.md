@@ -12,7 +12,7 @@ Build a mobile-first PWA task copilot that helps users manage home chores and pe
 ## Technical Context
 
 **Language/Version**: TypeScript 5.9+ with ES2022+ features, strict mode enabled
-**Primary Dependencies**: Vue 3.5+ (Composition API), Dexie.js 4.x (IndexedDB wrapper), Vite 7.x (build tool), Vite PWA Plugin 1.x (service worker generation), Pinia 3.x (state management), Vue Router 4.6+ (routing), date-fns 4.x (date calculations), Tailwind CSS 4.x (styling), Headless UI 1.7+ (accessible components)
+**Primary Dependencies**: Vue 3.5+ (Composition API), Dexie.js 4.x (IndexedDB wrapper), Vite 7.x (build tool), Vite PWA Plugin 1.x (service worker generation), Pinia 3.x (state management), Vue Router 4.6+ (routing), date-fns 4.x (date calculations), Tailwind CSS 4.x (styling with flex-based responsive layout), Headless UI 1.7+ (accessible components)
 **Storage**: IndexedDB via Dexie.js (primary source of truth, UUID-based task IDs for sync), Google Drive API with OAuth 2.0 for two-way sync
 **Testing**: Vitest 4.x (unit/integration), Playwright 1.57+ (E2E PWA testing including offline scenarios)
 **Target Platform**: PWA installable on iOS Safari 15+, Android Chrome 90+, Desktop Chrome/Edge/Firefox latest
@@ -78,7 +78,6 @@ src/
 ├── components/              # Vue 3 UI components
 │   ├── tasks/              # Task list, task form, task card components
 │   ├── suggestions/        # Suggestion display, time input components
-│   ├── common/             # Shared components (buttons, inputs, modals)
 │   └── settings/           # Settings page, Google Drive sync UI
 ├── views/                  # Vue Router page components
 │   ├── TasksView.vue      # Main task list page

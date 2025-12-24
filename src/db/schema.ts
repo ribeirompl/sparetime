@@ -9,6 +9,8 @@
  * - deletedAt: Filter soft-deleted tasks
  */
 
+import type { Priority } from '@/types/task'
+
 /**
  * Schema version 1 - UUID-based IDs with soft delete support
  *
@@ -23,9 +25,26 @@ export const SCHEMA_VERSION_1 = {
 } as const
 
 /**
+ * Schema version 2 - Priority changed from number (0-10) to enum
+ * Migration converts: 0-3 -> 'optional', 4-7 -> 'important', 8-10 -> 'critical'
+ */
+export const SCHEMA_VERSION_2 = {
+  ...SCHEMA_VERSION_1
+} as const
+
+/**
  * Current schema version
  */
-export const CURRENT_SCHEMA_VERSION = 1
+export const CURRENT_SCHEMA_VERSION = 2
+
+/**
+ * Convert numeric priority (0-10) to Priority enum
+ */
+export function migrateNumericPriority(numericPriority: number): Priority {
+  if (numericPriority >= 8) return 'critical'
+  if (numericPriority >= 4) return 'important'
+  return 'optional'
+}
 
 /**
  * Get schema for a specific version
@@ -34,6 +53,8 @@ export function getSchemaForVersion(version: number): Record<string, string> {
   switch (version) {
     case 1:
       return { ...SCHEMA_VERSION_1 }
+    case 2:
+      return { ...SCHEMA_VERSION_2 }
     default:
       throw new Error(`Unknown schema version: ${version}`)
   }

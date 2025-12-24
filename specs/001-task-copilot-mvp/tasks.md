@@ -295,27 +295,24 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T101 [P] Implement storage quota monitoring in src/utils/validation.ts (checkStorageQuota per data-model.md with 80% threshold trigger)
-- [ ] T102 [P] Add storage quota warning UI in App.vue (trigger at 80% usage)
-- [ ] T103 [P] Create export all data to JSON feature in SettingsView (FR-013)
-- [ ] T104 [P] Create delete all local data feature in SettingsView (FR-014)
-- [ ] T104a [P] Create delete all google drive data feature in SettingsView (if backup enabled)
-- [ ] T105 [P] Add loading states to all async operations (task CRUD, suggestions, sync)
-- [ ] T106 [P] Add error boundary handling in App.vue for graceful error display
-- [ ] T107 [P] Create common Button component in src/components/common/Button.vue with touch target sizes
-- [ ] T108 [P] Create common Input component in src/components/common/Input.vue with validation states
-- [ ] T109 [P] Create common Modal component in src/components/common/Modal.vue using Headless UI Dialog
-- [ ] T110 [P] Add accessibility labels and ARIA attributes to all interactive components
-- [ ] T111 Optimize bundle size (establish performance budget: target ~200KB gzipped initial JS; CI warns >200KB; implement code-splitting, lazy-loading, and monitoring)
+- [X] T101 [P] Implement storage quota monitoring in src/utils/validation.ts (checkStorageQuota per data-model.md with 80% threshold trigger)
+- [X] T102 [P] Add storage quota warning UI in App.vue (trigger at 80% usage)
+- [X] T103 [P] Create export all data to JSON feature in SettingsView (FR-013)
+- [X] T104 [P] Create delete all local data feature in SettingsView (FR-014)
+- [ ] T104a [P] When disconnecting google drive account, ask if all google drive data should be deleted in SettingsView, and perform the deletion and then only disconnect (if backup enabled)
+- [X] T105 [P] Add loading states to all async operations (task CRUD, suggestions, sync) and appropriate spinners/placeholders/disables in places and buttons where relevant
+- [X] T106 [P] Add error boundary handling in App.vue for graceful error display
+- [X] T110 [P] Add accessibility labels and ARIA attributes to all interactive components
+- [X] T111 Optimize bundle size (establish performance budget: target ~200KB gzipped initial JS; CI warns >200KB; implement code-splitting, lazy-loading, and monitoring)
 - [ ] T112 Run Lighthouse audit and verify scores ≥90 all categories
 - [ ] T113 Test PWA installation on iOS Safari 15+ and Android Chrome 90+
 - [ ] T114 Test offline functionality after clearing cache and going offline
 - [ ] T115 Verify First Contentful Paint <1.5s on 4G throttled connection
-- [ ] T116 [P] Add README.md with quickstart instructions
-- [ ] T117 [P] Add inline code comments for complex logic (scoring, urgency, crypto)
+- [X] T116 [P] Add README.md with quickstart instructions (No emojis)
+- [X] T117 [P] Add inline code comments for complex logic (scoring, urgency, crypto)
 - [ ] T118 Run quickstart.md validation (verify all steps work for new developer)
-- [ ] T119 Create sample tasks data for demo/testing purposes
-- [ ] T120 Setup GitHub Actions CI/CD pipeline in .github/workflows/ with build/deploy to GitHub Pages, unit tests, linting, TypeScript checks, Lighthouse CI for PWA validation, Dependabot config, security audits, and dependency/build caching
+- [X] T119 If first time loading the page (i.e. no locally stored data or cache), then ask the user if they want to start blank, or test with example tasks, or connect with google drive to sync, and perform those appropriate actions.
+- [X] T120 Setup GitHub Actions CI/CD pipeline in .github/workflows/ with build/deploy to GitHub Pages, unit tests, linting, TypeScript checks, Lighthouse CI for PWA validation, Dependabot config, security audits, and dependency/build caching
 - [ ] T121 Final code cleanup and refactoring for consistency
 
 ---

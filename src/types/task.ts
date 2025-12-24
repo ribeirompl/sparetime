@@ -11,6 +11,8 @@ export type EffortLevel = 'low' | 'medium' | 'high'
 
 export type Location = 'home' | 'outside' | 'anywhere'
 
+export type Priority = 'optional' | 'important' | 'critical'
+
 export type IntervalUnit = 'hours' | 'days' | 'weeks' | 'months' | 'years'
 
 /**
@@ -53,8 +55,8 @@ export interface Task {
   location: Location
   /** Task status: active, completed, or archived */
   status: TaskStatus
-  /** Priority (0-10, defaults to 5) */
-  priority: number
+  /** Priority: optional, important, or critical */
+  priority: Priority
   /** Optional deadline (ISO date string) */
   deadline?: string
   /** Optional dependency on another task */
@@ -81,7 +83,7 @@ export interface CreateTaskInput {
   timeEstimateMinutes: number
   effortLevel: EffortLevel
   location: Location
-  priority: number
+  priority: Priority
   deadline?: Date
   dependsOnId?: string
   recurringPattern?: Omit<RecurringPattern, 'nextDueDate'>

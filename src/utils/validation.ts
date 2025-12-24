@@ -3,7 +3,7 @@
  * Task validation and dependency checking per data-model.md
  */
 
-import type { CreateTaskInput, Task, EffortLevel, Location, TaskType } from '@/types/task'
+import type { CreateTaskInput, Task, EffortLevel, Location, TaskType, Priority } from '@/types/task'
 
 /**
  * Validation result
@@ -37,9 +37,8 @@ export const TaskValidation = {
     required: true
   },
   priority: {
-    min: 0,
-    max: 10,
-    default: 5,
+    values: ['optional', 'important', 'critical'] as Priority[],
+    default: 'important' as Priority,
     required: true
   },
   type: {
@@ -113,13 +112,10 @@ export function validateTask(input: CreateTaskInput): ValidationResult {
   }
 
   // Priority validation
-  if (input.priority === undefined || input.priority === null) {
+  if (!input.priority) {
     errors.push('Priority is required')
-  } else if (
-    input.priority < TaskValidation.priority.min ||
-    input.priority > TaskValidation.priority.max
-  ) {
-    errors.push('Priority must be between 0 and 10')
+  } else if (!TaskValidation.priority.values.includes(input.priority)) {
+    errors.push('Priority must be optional, important, or critical')
   }
 
   // Recurring pattern validation (if provided)

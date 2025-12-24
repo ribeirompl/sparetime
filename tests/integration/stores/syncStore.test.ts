@@ -36,7 +36,7 @@ function createTestTask(overrides: Partial<Task> & { id: string }): Task {
     effortLevel: 'medium',
     location: 'home',
     status: 'active',
-    priority: 5,
+    priority: 'important',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     ...overrides
@@ -287,11 +287,11 @@ describe('SyncStore Integration Tests', () => {
       expect(resolved?.name).toBe(localTask.name)
       expect(resolved?.type).toBe(localTask.type)
       expect(resolved?.status).toBe(localTask.status)
-      
+
       // updatedAt should be updated to current time (not the original)
       expect(resolved?.updatedAt).toBeDefined()
       expect(new Date(resolved!.updatedAt).getTime()).toBeGreaterThan(new Date(localTask.updatedAt).getTime() - 1000)
-      
+
       const syncState = await db.syncState.get(1)
       expect(syncState?.conflicts).toHaveLength(0)
     })
@@ -312,7 +312,7 @@ describe('SyncStore Integration Tests', () => {
         effortLevel: 'medium' as const,
         location: 'home' as const,
         status: 'active' as const,
-        priority: 5,
+        priority: 'important' as const,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }
@@ -327,7 +327,7 @@ describe('SyncStore Integration Tests', () => {
       const resolved = await syncStore.resolveConflict(taskId, 'remote')
 
       expect(resolved?.name).toBe('Remote')
-      
+
       // updatedAt should be updated to current time
       expect(resolved?.updatedAt).toBeDefined()
       expect(new Date(resolved!.updatedAt).getTime()).toBeGreaterThan(new Date(remoteTask.updatedAt).getTime() - 1000)
@@ -335,7 +335,7 @@ describe('SyncStore Integration Tests', () => {
       // Verify the task was updated in DB
       const updatedTask = await db.tasks.get(taskId)
       expect(updatedTask?.name).toBe('Remote')
-      
+
       // Verify conflict was removed
       const syncState = await db.syncState.get(1)
       expect(syncState?.conflicts).toHaveLength(0)
@@ -424,7 +424,7 @@ describe('SyncStore Integration Tests', () => {
 
         // Mock Google Drive functions - download returns empty, upload succeeds
         vi.mocked(downloadBackup).mockResolvedValueOnce(null)
-        vi.mocked(uploadBackup).mockResolvedValueOnce(undefined)
+        vi.mocked(uploadBackup).mockResolvedValueOnce('file-id')
 
         const result = await syncStore.performSync()
 
@@ -447,7 +447,7 @@ describe('SyncStore Integration Tests', () => {
           checksum: 'test',
           tasks: [remoteTask]
         })
-        vi.mocked(uploadBackup).mockResolvedValueOnce(undefined)
+        vi.mocked(uploadBackup).mockResolvedValueOnce('file-id')
 
         const result = await syncStore.performSync()
 
@@ -486,7 +486,7 @@ describe('SyncStore Integration Tests', () => {
           checksum: 'test',
           tasks: [remoteTask]
         })
-        vi.mocked(uploadBackup).mockResolvedValueOnce(undefined)
+        vi.mocked(uploadBackup).mockResolvedValueOnce('file-id')
 
         const result = await syncStore.performSync()
 
@@ -523,7 +523,7 @@ describe('SyncStore Integration Tests', () => {
           checksum: 'test',
           tasks: [remoteTask]
         })
-        vi.mocked(uploadBackup).mockResolvedValueOnce(undefined)
+        vi.mocked(uploadBackup).mockResolvedValueOnce('file-id')
 
         const result = await syncStore.performSync()
 
@@ -594,7 +594,7 @@ describe('SyncStore Integration Tests', () => {
         await db.tasks.add(createTestTask({ id: 'local-uuid', name: 'Local Task' }))
 
         // Mock remote has data
-        vi.mocked(getBackupLastModified).mockResolvedValueOnce('2025-12-25T12:00:00.000Z')
+        vi.mocked(getBackupLastModified).mockResolvedValueOnce(new Date('2025-12-25T12:00:00.000Z'))
 
         const result = await syncStore.checkFirstTimeConnect()
 
@@ -613,7 +613,7 @@ describe('SyncStore Integration Tests', () => {
         await db.tasks.add(createTestTask({ id: 'local-uuid', name: 'Local Task' }))
 
         // Mock remote has data
-        vi.mocked(getBackupLastModified).mockResolvedValueOnce('2025-12-25T12:00:00.000Z')
+        vi.mocked(getBackupLastModified).mockResolvedValueOnce(new Date('2025-12-25T12:00:00.000Z'))
 
         const result = await syncStore.checkFirstTimeConnect()
 
@@ -680,7 +680,7 @@ describe('SyncStore Integration Tests', () => {
         await db.tasks.add(localTask)
 
         // Mock upload
-        vi.mocked(uploadBackup).mockResolvedValueOnce(undefined)
+        vi.mocked(uploadBackup).mockResolvedValueOnce('file-id')
 
         const result = await syncStore.handleFirstTimeMerge('use-local')
 

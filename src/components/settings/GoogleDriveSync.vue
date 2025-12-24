@@ -12,6 +12,7 @@ import {
   revokeAccessToken,
   getBackupLastModified
 } from '@/services/googleDrive'
+import { formatDateTimeLocale } from '@/utils/dateHelpers'
 import type { TokenClient } from '@/services/googleDrive'
 
 const syncStore = useSyncStore()
@@ -154,7 +155,7 @@ async function handleMergeDecision(decision: 'merge' | 'use-remote' | 'use-local
 
 function formatDate(date: Date | null): string {
   if (!date) return 'Never'
-  return date.toLocaleString()
+  return formatDateTimeLocale(date)
 }
 
 function getStatusLabel(status: string): string {

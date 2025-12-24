@@ -37,7 +37,7 @@ describe('SyncStore - Conflict Resolution Edge Cases', () => {
     effortLevel: 'medium',
     location: 'home',
     status: 'active',
-    priority: 5,
+    priority: 'important',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     ...overrides

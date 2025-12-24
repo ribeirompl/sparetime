@@ -10,7 +10,7 @@ import {
   calculateFactors,
   compareTasks
 } from '@/services/scoring'
-import type { Task } from '@/types/task'
+import type { Task, Priority } from '@/types/task'
 import type { SuggestionContext, TaskScore } from '@/types/suggestion'
 
 /**
@@ -25,7 +25,7 @@ function createTestTask(overrides: Partial<Task> = {}): Task {
     effortLevel: 'medium',
     location: 'home',
     status: 'active',
-    priority: 5,
+    priority: 'important',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     ...overrides
@@ -55,7 +55,7 @@ describe('Scoring Algorithm', () => {
     })
 
     it('should return normalized score for high priority task', () => {
-      const task = createTestTask({ priority: 10 })
+      const task = createTestTask({ priority: 'critical' })
       const context = createTestContext()
 
       const score = calculateScore(task, context)
@@ -65,7 +65,7 @@ describe('Scoring Algorithm', () => {
     })
 
     it('should return normalized score for low priority task', () => {
-      const task = createTestTask({ priority: 0 })
+      const task = createTestTask({ priority: 'optional' })
       const context = createTestContext()
 
       const score = calculateScore(task, context)
@@ -96,7 +96,7 @@ describe('Scoring Algorithm', () => {
     })
 
     it('should normalize each factor to 0-1 range', () => {
-      const task = createTestTask({ priority: 7 })
+      const task = createTestTask({ priority: 'important' })
       const context = createTestContext()
 
       const factors = calculateFactors(task, context)
@@ -113,14 +113,14 @@ describe('Scoring Algorithm', () => {
     it('should weight priority equally with time match', () => {
       // Two tasks: one with high priority, one with perfect time match
       const highPriorityTask = createTestTask({
-        id: 1,
-        priority: 10,
+        id: 'task-1',
+        priority: 'critical',
         timeEstimateMinutes: 10 // poor time match for 60 min
       })
 
       const perfectTimeTask = createTestTask({
-        id: 2,
-        priority: 5, // medium priority
+        id: 'task-2',
+        priority: 'important', // medium priority
         timeEstimateMinutes: 60 // perfect time match
       })
 
@@ -130,7 +130,7 @@ describe('Scoring Algorithm', () => {
       const perfectTimeFactors = calculateFactors(perfectTimeTask, context)
 
       // Both factors should be normalized equally
-      expect(highPriorityFactors.priority).toBe(1) // 10/10
+      expect(highPriorityFactors.priority).toBe(1) // critical = 1.0
       expect(perfectTimeFactors.timeMatch).toBe(1) // 60/60
 
       // Scores should reflect equal weighting
@@ -144,7 +144,7 @@ describe('Scoring Algorithm', () => {
 
     it('should average all applicable factors equally', () => {
       const task = createTestTask({
-        priority: 10, // max priority = 1.0
+        priority: 'critical', // max priority = 1.0
         timeEstimateMinutes: 60 // perfect time match for 60 min = 1.0
       })
 
@@ -165,7 +165,7 @@ describe('Scoring Algorithm', () => {
       expect(score).toBeLessThanOrEqual(1)
 
       // Verify all factors are accounted for (at least priority and timeMatch)
-      expect(factors.priority).toBe(1) // 10/10
+      expect(factors.priority).toBe(1) // critical = 1.0
       expect(factors.timeMatch).toBe(1) // 60/60
     })
 
@@ -495,7 +495,7 @@ describe('Scoring Algorithm', () => {
     })
 
     it('should score anywhere tasks equally regardless of location filter', () => {
-      const anywhereTask = createTestTask({ location: 'anywhere', priority: 5, timeEstimateMinutes: 30 })
+      const anywhereTask = createTestTask({ location: 'anywhere', priority: 'important', timeEstimateMinutes: 30 })
 
       const homeContext = createTestContext({ contextFilters: { location: 'home' } })
       const outsideContext = createTestContext({ contextFilters: { location: 'outside' } })

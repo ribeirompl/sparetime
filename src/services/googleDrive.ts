@@ -146,8 +146,23 @@ export function initializeGoogleAuth(): Promise<TokenClient> {
 
 /**
  * Request access token from Google
+ * For initial sign-in, use `prompt: ''` to show account chooser
+ * The silent refresh (prompt: 'none') should only be used in syncStore.refreshTokenSilently()
+ * But been running into issues where the prompt: 'none' call fails, so resorting to always showing the account chooser for now.
  */
 export async function requestAccessToken(tokenClient: TokenClient): Promise<string> {
+  // Always show account chooser for user-initiated sign-in
+  // This ensures the popup works since it's in the user click context
+  return await requestAccessTokenWithPrompt(tokenClient, '')
+}
+
+/**
+ * Request access token with specific prompt mode
+ */
+async function requestAccessTokenWithPrompt(
+  tokenClient: TokenClient,
+  prompt: string
+): Promise<string> {
   return new Promise((resolve, reject) => {
     tokenClient.callback = (response: TokenResponse) => {
       if (response.error) {
@@ -156,7 +171,7 @@ export async function requestAccessToken(tokenClient: TokenClient): Promise<stri
         resolve(response.access_token)
       }
     }
-    tokenClient.requestAccessToken({ prompt: '' })
+    tokenClient.requestAccessToken({ prompt })
   })
 }
 
@@ -195,7 +210,7 @@ export async function findBackupFile(accessToken: string): Promise<string | null
     if (response.status === 401 || response.status === 403) {
       throw new Error('Google Drive authentication expired. Please reconnect your account.')
     }
-    
+
     // Try to get error details from response
     let errorDetails = response.statusText
     try {
@@ -206,7 +221,7 @@ export async function findBackupFile(accessToken: string): Promise<string | null
     } catch {
       // If JSON parsing fails, use statusText
     }
-    
+
     throw new Error(`Failed to search for backup file: ${errorDetails}`)
   }
 

@@ -70,6 +70,7 @@
 .btn-primary {
   background-color: var(--color-primary-600);
   color: white;
+  cursor: pointer;
 }
 
 .btn-primary:hover {
@@ -81,9 +82,14 @@
   box-shadow: 0 0 0 2px white, 0 0 0 4px var(--color-primary-500);
 }
 
+.btn-primary:disabled {
+  cursor: not-allowed;
+}
+
 /* Filter pill styles */
 .filter-pill {
   transition: all 0.15s ease-in-out;
+  cursor: pointer;
 }
 
 .filter-pill-active {
@@ -111,9 +117,12 @@ body {
 
 /* Safe area padding for notched devices */
 .safe-area-inset {
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
-  padding-bottom: env(safe-area-inset-bottom);
+  /* Use CSS env() with fallbacks so desktop browsers return 0 and don't override
+     other padding. Include top inset for completeness on devices that need it. */
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* Button base styles */
@@ -150,6 +159,20 @@ body {
 
 .btn-ghost:hover:not(:disabled) {
   background-color: #f3f4f6;
+}
+
+.btn-success {
+  background-color: var(--success);
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: #16a34a;
+}
+
+.btn-success:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px white, 0 0 0 4px var(--success);
 }
 
 /* Text utility classes */

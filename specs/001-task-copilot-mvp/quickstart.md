@@ -113,13 +113,14 @@ In DevTools → Application tab → Manifest → Verify "SpareTime Task Copilot"
 1. Click "Add Task" button
 2. Fill in:
    - Name: "Test Task"
-   - Type: "one-off"
-   - Time Estimate: 30 minutes
+   - Type: "one-off" (only one-off type shows the optional deadline field)
+   - Time Estimate: Use presets (15m/30m/60m) or enter custom value
    - Effort Level: "medium" (mandatory)
    - Location: "home" (mandatory)
 3. Click "Save"
-4. Verify task appears in list
+4. Verify task appears in list with checkbox on left, kebab menu on right
 5. Refresh page → task should persist (IndexedDB working)
+6. Note: The task list shows filter tabs with "All" separated by a vertical divider from type filters
 
 ### Check 5: Offline Mode & Two-Way Sync
 
@@ -181,10 +182,13 @@ Verify JS bundle is within the performance budget (initial JS target ~200KB gzip
 sparetime/
 ├── src/
 │   ├── components/       # Vue components
-│   │   ├── tasks/       # Task-related components
-│   │   ├── suggestions/ # Suggestion UI
+│   │   ├── tasks/       # TaskCard (with checkbox/kebab menu), TaskForm, TaskList
+│   │   ├── suggestions/ # SuggestionCard, TimeInput (with presets)
 │   │   └── common/      # Shared components
 │   ├── views/           # Page components (routes)
+│   │   ├── TasksView.vue      # Task list with filter tabs (All | type filters)
+│   │   ├── SuggestionsView.vue # Collapsible suggestion options
+│   │   └── SettingsView.vue   # Settings with sync status
 │   ├── stores/          # Pinia state management
 │   ├── services/        # Business logic
 │   ├── db/              # Dexie.js database

@@ -30,7 +30,7 @@ describe('taskStore integration with IndexedDB', () => {
     timeEstimateMinutes: 30,
     effortLevel: 'medium',
     location: 'home',
-    priority: 5,
+    priority: 'important',
     ...overrides
   })
 
@@ -126,13 +126,13 @@ describe('taskStore integration with IndexedDB', () => {
       const updated = await store.update({
         id: task!.id!,
         name: 'New Name',
-        priority: 10,
+        priority: 'critical',
         effortLevel: 'high',
         location: 'outside'
       })
 
       expect(updated!.name).toBe('New Name')
-      expect(updated!.priority).toBe(10)
+      expect(updated!.priority).toBe('critical')
       expect(updated!.effortLevel).toBe('high')
       expect(updated!.location).toBe('outside')
     })
@@ -290,7 +290,7 @@ describe('taskStore integration with IndexedDB', () => {
         effortLevel: 'low',
         location: 'home',
         status: 'active',
-        priority: 5,
+        priority: 'important',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       })
@@ -302,7 +302,7 @@ describe('taskStore integration with IndexedDB', () => {
         effortLevel: 'high',
         location: 'outside',
         status: 'active',
-        priority: 8,
+        priority: 'critical',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       })

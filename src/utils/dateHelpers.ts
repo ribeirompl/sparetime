@@ -16,10 +16,81 @@ import {
   formatISO,
   isBefore,
   isAfter,
-  isEqual
+  isEqual,
+  format
 } from 'date-fns'
 
 import type { IntervalUnit, RecurringPattern } from '@/types/task'
+
+/**
+ * Format a date for display using user's locale preferences
+ * Uses Intl.DateTimeFormat for locale-aware formatting
+ *
+ * @param date - ISO date string or Date to format
+ * @param options - Optional Intl.DateTimeFormatOptions
+ * @returns Formatted date string in user's locale
+ */
+export function formatDateLocale(
+  date: string | Date,
+  options?: Intl.DateTimeFormatOptions
+): string {
+  const dateObj = typeof date === 'string' ? parseISO(date) : date
+  
+  const defaultOptions: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  }
+  
+  return new Intl.DateTimeFormat(undefined, options ?? defaultOptions).format(dateObj)
+}
+
+/**
+ * Format a date with time for display using user's locale preferences
+ *
+ * @param date - ISO date string or Date to format
+ * @returns Formatted date-time string in user's locale
+ */
+export function formatDateTimeLocale(date: string | Date): string {
+  const dateObj = typeof date === 'string' ? parseISO(date) : date
+  
+  return new Intl.DateTimeFormat(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  }).format(dateObj)
+}
+
+/**
+ * Format a date in short format for display (e.g., "Jan 15")
+ *
+ * @param date - ISO date string or Date to format
+ * @returns Short formatted date string
+ */
+export function formatDateShort(date: string | Date): string {
+  const dateObj = typeof date === 'string' ? parseISO(date) : date
+  return format(dateObj, 'MMM d')
+}
+
+/**
+ * Format a date relative to today (e.g., "Today", "Tomorrow", "Jan 15")
+ *
+ * @param date - ISO date string or Date to format
+ * @param now - Current date (defaults to today)
+ * @returns Relative or formatted date string
+ */
+export function formatDateRelative(date: string | Date, now: Date = new Date()): string {
+  const dateObj = typeof date === 'string' ? parseISO(date) : date
+  const days = differenceInDays(startOfDay(dateObj), startOfDay(now))
+  
+  if (days === 0) return 'Today'
+  if (days === 1) return 'Tomorrow'
+  if (days === -1) return 'Yesterday'
+  
+  return formatDateLocale(dateObj)
+}
 
 /**
  * Calculate the next due date for a recurring task

@@ -2,9 +2,10 @@
 /**
  * SuggestionsView - Time-based task suggestions
  * Per tasks.md T060 - implements suggestion generation flow
+ * Redesigned with collapsible options section
  */
 
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useSuggestionStore } from '@/stores/suggestionStore'
 import { useTaskStore } from '@/stores/taskStore'
 import { TimeInput, SuggestionList } from '@/components/suggestions'
@@ -14,6 +15,14 @@ const suggestionStore = useSuggestionStore()
 const taskStore = useTaskStore()
 
 const hasGenerated = ref(false)
+const optionsExpanded = ref(true)
+
+// Store the last used context for display in summary
+const lastInputContext = ref<{
+  availableTimeMinutes: number
+  effortLevel?: EffortLevel
+  location?: Location
+} | null>(null)
 
 onMounted(async () => {
   // Ensure tasks are loaded
@@ -22,12 +31,46 @@ onMounted(async () => {
   }
 })
 
+const summaryText = computed(() => {
+  if (!lastInputContext.value) return ''
+  
+  const parts: string[] = []
+  
+  // Time
+  const mins = lastInputContext.value.availableTimeMinutes
+  if (mins < 60) {
+    parts.push(`${mins}m`)
+  } else {
+    const hours = Math.floor(mins / 60)
+    const remainingMins = mins % 60
+    parts.push(remainingMins > 0 ? `${hours}h ${remainingMins}m` : `${hours}h`)
+  }
+  
+  // Effort
+  if (lastInputContext.value.effortLevel) {
+    const effortEmoji = lastInputContext.value.effortLevel === 'low' ? '😴' 
+      : lastInputContext.value.effortLevel === 'medium' ? '😊' : '⚡'
+    parts.push(`${effortEmoji} ${lastInputContext.value.effortLevel}`)
+  }
+  
+  // Location
+  if (lastInputContext.value.location) {
+    const locEmoji = lastInputContext.value.location === 'home' ? '🏠' 
+      : lastInputContext.value.location === 'outside' ? '🌳' : '📍'
+    parts.push(`${locEmoji} ${lastInputContext.value.location}`)
+  }
+  
+  return parts.join(' • ')
+})
+
 async function handleSubmit(input: {
   availableTimeMinutes: number
   effortLevel?: EffortLevel
   location?: Location
 }) {
   hasGenerated.value = true
+  optionsExpanded.value = false
+  lastInputContext.value = input
   
   await suggestionStore.generateSuggestions({
     availableTimeMinutes: input.availableTimeMinutes,
@@ -59,18 +102,69 @@ async function handleDismiss(taskId: string) {
     suggestionStore.currentSuggestions.splice(index, 1)
   }
 }
+
+function toggleOptions() {
+  optionsExpanded.value = !optionsExpanded.value
+}
+
+function refreshSuggestions() {
+  if (lastInputContext.value) {
+    handleSubmit(lastInputContext.value)
+  }
+}
 </script>
 
 <template>
-  <div class="pb-20">
-    <h2 class="text-2xl font-bold text-gray-900 mb-6">Get Suggestions</h2>
+  <div class="flex flex-col">
+    <!-- Header -->
+    <div class="pb-3 mx-2">
+      <h2 class="text-xl font-bold text-gray-900 mb-2">Suggestions</h2>
 
-    <!-- Time Input -->
-    <div class="mb-6">
-      <TimeInput
-        :loading="suggestionStore.loading"
-        @submit="handleSubmit"
-      />
+      <!-- Options Section - Collapsible with animation -->
+      <!-- Collapsed Summary View -->
+      <Transition name="collapse">
+        <div 
+          v-if="hasGenerated && !optionsExpanded"
+          class="rounded-lg bg-white p-3 shadow cursor-pointer hover:bg-gray-50 transition-colors"
+          @click="toggleOptions"
+        >
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-gray-700">Filters:</span>
+              <span class="text-sm text-primary-600 font-medium">{{ summaryText }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                class="text-xs text-gray-500 hover:text-primary-600 cursor-pointer"
+                @click.stop="toggleOptions"
+              >
+                Edit
+              </button>
+              <svg 
+                class="w-4 h-4 text-gray-400" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Expanded Options View with animation -->
+      <Transition name="expand">
+        <div 
+          v-if="optionsExpanded"
+        >
+          <TimeInput
+            :loading="suggestionStore.loading"
+            @submit="handleSubmit"
+          />
+        </div>
+      </Transition>
     </div>
 
     <!-- Initial State (before generating) -->
@@ -100,7 +194,7 @@ async function handleDismiss(taskId: string) {
 
     <!-- Suggestions List -->
     <SuggestionList
-      v-else
+      v-else-if="hasGenerated"
       :suggestions="suggestionStore.currentSuggestions"
       :loading="suggestionStore.loading"
       :message="suggestionStore.message"
@@ -126,3 +220,44 @@ async function handleDismiss(taskId: string) {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Collapse animation (summary view entering) */
+.collapse-enter-active {
+  transition: all 0.3s ease;
+}
+
+.collapse-leave-active {
+  /* Hide immediately when leaving to avoid jump during expand transition */
+  transition: opacity 0.05s ease;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  opacity: 0;
+}
+
+.collapse-enter-from {
+  transform: translateY(-10px);
+}
+
+/* Expand animation (full options entering) */
+.expand-enter-active,
+.expand-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.expand-enter-from,
+.expand-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-10px);
+}
+
+.expand-enter-to,
+.expand-leave-from {
+  opacity: 1;
+  max-height: 500px;
+}
+</style>

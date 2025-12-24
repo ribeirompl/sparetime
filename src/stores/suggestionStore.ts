@@ -4,7 +4,7 @@
  */
 
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, toRaw } from 'vue'
 import { db } from '@/db/database'
 import type {
   SuggestionContext,
@@ -80,9 +80,13 @@ export const useSuggestionStore = defineStore('suggestion', () => {
       }
 
       // Filter tasks that fit in available time
-      let filteredTasks = activeTasks.filter(
-        (task) => task.timeEstimateMinutes <= context.availableTimeMinutes
-      )
+      // For project tasks, use minimum session duration instead of total time estimate
+      let filteredTasks = activeTasks.filter((task) => {
+        const effectiveTime = task.type === 'project' && task.projectSession
+          ? task.projectSession.minSessionDurationMinutes
+          : task.timeEstimateMinutes
+        return effectiveTime <= context.availableTimeMinutes
+      })
 
       // Apply context filters if provided
       if (context.contextFilters) {
@@ -163,7 +167,7 @@ export const useSuggestionStore = defineStore('suggestion', () => {
     const session: SuggestionSession = {
       timestamp: nowISO(),
       availableTimeMinutes: context.availableTimeMinutes,
-      contextFilters: context.contextFilters,
+      contextFilters: context.contextFilters ? toRaw(context.contextFilters) : undefined,
       suggestions: suggestions.map((s) => ({
         taskId: s.taskId,
         score: s.score,

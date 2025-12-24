@@ -19,7 +19,7 @@ describe('Validation Edge Cases', () => {
           effortLevel: 'medium',
           location: 'home',
           status: 'active',
-          priority: 5,
+          priority: 'important',
           dependsOnId: 'task-2',
           createdAt: nowISO(),
           updatedAt: nowISO()
@@ -32,7 +32,7 @@ describe('Validation Edge Cases', () => {
           effortLevel: 'medium',
           location: 'home',
           status: 'active',
-          priority: 5,
+          priority: 'important',
           dependsOnId: 'task-3',
           createdAt: nowISO(),
           updatedAt: nowISO()
@@ -45,7 +45,7 @@ describe('Validation Edge Cases', () => {
           effortLevel: 'medium',
           location: 'home',
           status: 'active',
-          priority: 5,
+          priority: 'important',
           createdAt: nowISO(),
           updatedAt: nowISO()
         }
@@ -66,7 +66,7 @@ describe('Validation Edge Cases', () => {
           effortLevel: 'medium',
           location: 'home',
           status: 'active',
-          priority: 5,
+          priority: 'important',
           dependsOnId: 'task-2',
           createdAt: nowISO(),
           updatedAt: nowISO()
@@ -79,7 +79,7 @@ describe('Validation Edge Cases', () => {
           effortLevel: 'medium',
           location: 'home',
           status: 'active',
-          priority: 5,
+          priority: 'important',
           dependsOnId: 'task-3',
           createdAt: nowISO(),
           updatedAt: nowISO()
@@ -92,7 +92,7 @@ describe('Validation Edge Cases', () => {
           effortLevel: 'medium',
           location: 'home',
           status: 'active',
-          priority: 5,
+          priority: 'important',
           createdAt: nowISO(),
           updatedAt: nowISO()
         },
@@ -104,7 +104,7 @@ describe('Validation Edge Cases', () => {
           effortLevel: 'medium',
           location: 'home',
           status: 'active',
-          priority: 5,
+          priority: 'important',
           createdAt: nowISO(),
           updatedAt: nowISO()
         }
@@ -125,7 +125,7 @@ describe('Validation Edge Cases', () => {
           effortLevel: 'medium',
           location: 'home',
           status: 'active',
-          priority: 5,
+          priority: 'important',
           dependsOnId: 'missing-task',
           createdAt: nowISO(),
           updatedAt: nowISO()
@@ -147,7 +147,7 @@ describe('Validation Edge Cases', () => {
           effortLevel: 'medium',
           location: 'home',
           status: 'active',
-          priority: 5,
+          priority: 'important',
           dependsOnId: 'task-2',
           createdAt: nowISO(),
           updatedAt: nowISO()
@@ -160,7 +160,7 @@ describe('Validation Edge Cases', () => {
           effortLevel: 'medium',
           location: 'home',
           status: 'active',
-          priority: 5,
+          priority: 'important',
           dependsOnId: 'task-3',
           createdAt: nowISO(),
           updatedAt: nowISO()
@@ -173,7 +173,7 @@ describe('Validation Edge Cases', () => {
           effortLevel: 'medium',
           location: 'home',
           status: 'active',
-          priority: 5,
+          priority: 'important',
           dependsOnId: 'task-1', // Already creates cycle
           createdAt: nowISO(),
           updatedAt: nowISO()

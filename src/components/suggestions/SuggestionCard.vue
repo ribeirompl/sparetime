@@ -33,6 +33,54 @@ function getEffortColor(effort: string): string {
 }
 
 /**
+ * Get effort level label in Title Case
+ */
+function getEffortLabel(effort: string): string {
+  switch (effort) {
+    case 'low':
+      return 'Low'
+    case 'medium':
+      return 'Medium'
+    case 'high':
+      return 'High'
+    default:
+      return effort
+  }
+}
+
+/**
+ * Get location label in Title Case
+ */
+function getLocationLabel(location: string): string {
+  switch (location) {
+    case 'home':
+      return 'Home'
+    case 'outside':
+      return 'Outside'
+    case 'anywhere':
+      return 'Anywhere'
+    default:
+      return location
+  }
+}
+
+/**
+ * Get task type label in Title Case
+ */
+function getTypeLabel(type: string): string {
+  switch (type) {
+    case 'recurring':
+      return 'Recurring'
+    case 'project':
+      return 'Project'
+    case 'one-off':
+      return 'One-Off'
+    default:
+      return type
+  }
+}
+
+/**
  * Get location icon
  */
 function getLocationIcon(location: string): string {
@@ -87,6 +135,8 @@ function handleDismiss() {
   <div
     data-testid="suggestion-card"
     class="rounded-lg bg-white p-4 shadow transition-all hover:shadow-md"
+    role="article"
+    :aria-label="`Suggested task: ${suggestion.task.name}. ${formatDuration(suggestion.task.timeEstimateMinutes)}. ${suggestion.task.effortLevel} effort.`"
   >
     <!-- Header: Task name and urgency indicator -->
     <div class="flex items-start justify-between gap-3 mb-3">
@@ -124,12 +174,12 @@ function handleDismiss() {
         class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
         :class="getEffortColor(suggestion.task.effortLevel)"
       >
-        {{ suggestion.task.effortLevel }} effort
+        {{ getEffortLabel(suggestion.task.effortLevel) }} Effort
       </span>
       
       <!-- Location -->
       <span class="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700">
-        {{ getLocationIcon(suggestion.task.location) }} {{ suggestion.task.location }}
+        {{ getLocationIcon(suggestion.task.location) }} {{ getLocationLabel(suggestion.task.location) }}
       </span>
       
       <!-- Task Type -->
@@ -138,7 +188,7 @@ function handleDismiss() {
         class="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700"
       >
         {{ suggestion.task.type === 'recurring' ? '🔁' : '📂' }}
-        {{ suggestion.task.type }}
+        {{ getTypeLabel(suggestion.task.type) }}
       </span>
     </div>
 
@@ -156,12 +206,13 @@ function handleDismiss() {
         type="button"
         data-testid="complete-task-button"
         :disabled="loading"
-        class="touch-target flex-1 rounded-lg px-4 py-2 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        style="background-color: #059669; color: white;"
+        class="touch-target flex-1 rounded-lg px-4 py-2 font-medium btn-success transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        :aria-label="`Mark ${suggestion.task.name} as done`"
+        :aria-busy="loading"
         @click="handleComplete"
       >
         <span class="flex items-center justify-center gap-2">
-          <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
           </svg>
           Done
@@ -171,8 +222,9 @@ function handleDismiss() {
       <button
         type="button"
         :disabled="loading"
-        class="touch-target rounded-lg border border-gray-300 px-4 py-2 text-gray-700 font-medium transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        style="background-color: white;"
+        class="touch-target rounded-lg border border-gray-300 px-4 py-2 bg-white text-gray-700 font-medium transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        :aria-label="`Skip ${suggestion.task.name}`"
+        :aria-busy="loading"
         @click="handleDismiss"
       >
         Skip
