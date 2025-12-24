@@ -7,7 +7,7 @@
 import { ref, computed } from 'vue'
 import type { EffortLevel, Location } from '@/types/task'
 
-const props = defineProps<{
+defineProps<{
   loading?: boolean
 }>()
 

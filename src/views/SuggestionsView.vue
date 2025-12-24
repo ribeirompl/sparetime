@@ -106,12 +106,6 @@ async function handleDismiss(taskId: string) {
 function toggleOptions() {
   optionsExpanded.value = !optionsExpanded.value
 }
-
-function refreshSuggestions() {
-  if (lastInputContext.value) {
-    handleSubmit(lastInputContext.value)
-  }
-}
 </script>
 
 <template>
