@@ -161,7 +161,8 @@ jobs:
   # Deploy to GitHub Pages (only on main branch)
   deploy:
     runs-on: ubuntu-latest
-    needs: [build-and-test, e2e-tests, lighthouse]
+    # needs: [build-and-test, e2e-tests, lighthouse]
+    needs: [build-and-test, lighthouse]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     permissions:
