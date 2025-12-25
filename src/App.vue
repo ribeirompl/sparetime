@@ -337,11 +337,11 @@ function getStatusTitle(): string {
 
         <!-- Install button (shows when browser fires beforeinstallprompt) -->
         <button
-          v-if="deferredPrompt"
+          v-if="deferredPrompt && !installed"
           @click="installApp"
           class="ml-2 touch-target px-3 py-1 rounded-lg bg-white/10 text-white hover:bg-white/20"
           title="Install SpareTime"
-          >
+        >
           Install
         </button>
         <!-- Sync Status Indicator (show after initialization) -->
