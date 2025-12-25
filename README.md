@@ -1,6 +1,14 @@
+<p align="center">
+  <a href="https://ribeirompl.github.io/sparetime">
+    <img src="public/icons/icon.svg" alt="SpareTime logo" width="96" />
+  </a>
+</p>
+
 # SpareTime Task Copilot
 
-A mobile-first Progressive Web App (PWA) for managing home chores and personal projects with intelligent time-based suggestions.
+SpareTime helps you get more done in short pockets of time. It suggests a few quick, prioritized tasks you can finish with the time you have, helps organize chores and projects, and keeps your data available even when you're offline. You can install it on your phone or desktop for an app-like experience.
+
+You can use it here: https://ribeirompl.github.io/sparetime
 
 ## Features
 
@@ -11,7 +19,22 @@ A mobile-first Progressive Web App (PWA) for managing home chores and personal p
 - **Optional Cloud Backup**: Two-way sync with Google Drive (requires opt-in)
 - **PWA Installable**: Install on iOS, Android, and desktop for native-like experience
 
-## Quick Start
+## Screenshots
+
+<div style="display:grid;grid-template-columns:repeat(2,240px);gap:12px;justify-content:center;align-items:start">
+  <a href="docs/tasks_view.png"><img src="docs/tasks_view.png" alt="Tasks view" width="240" /></a>
+  <a href="docs/suggestions_input_view.png"><img src="docs/suggestions_input_view.png" alt="Suggestions input" width="240" /></a>
+  <a href="docs/suggestions_output_view.png"><img src="docs/suggestions_output_view.png" alt="Suggestions output" width="240" /></a>
+  <a href="docs/settings_view.png"><img src="docs/settings_view.png" alt="Settings view" width="240" /></a>
+</div>
+
+## Limitations
+
+- **No notification support:** This app does not provide OS-level push or local notifications or background reminder services. If you need critical reminders, a dedicated reminder app is recommended.
+
+## Developer Quick Start
+
+This section is for developers and contributors who want to run or build the project locally. If you just want to use the app, use https://ribeirompl.github.io/sparetime.
 
 ### Prerequisites
 
