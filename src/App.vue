@@ -14,6 +14,20 @@ const taskStore = useTaskStore()
 const storageWarning = ref<StorageEstimate | null>(null)
 const showStorageWarning = ref(false)
 
+// Install prompt state (for browsers that support the beforeinstallprompt event)
+const deferredPrompt = ref<any | null>(null)
+const installed = ref(false)
+
+// Handlers kept as top-level refs so we can add/remove them reliably
+const handleBeforeInstall = (e: any) => {
+  e.preventDefault()
+  deferredPrompt.value = e
+}
+const handleAppInstalled = () => {
+  installed.value = true
+  deferredPrompt.value = null
+}
+
 // T106: Error boundary state
 const hasError = ref(false)
 const errorMessage = ref('')
@@ -121,6 +135,21 @@ onMounted(async () => {
   // T119: Check if this is a first-time user
   await checkFirstTimeUser()
 
+  // Detect if already installed (standalone display-mode or iOS navigator.standalone)
+  try {
+    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+      installed.value = true
+    }
+    if ((navigator as any).standalone === true) installed.value = true
+  } catch (e) {
+    // ignore
+  }
+
+  // Capture the beforeinstallprompt event so we can show a custom install button
+  window.addEventListener('beforeinstallprompt', handleBeforeInstall)
+  // Listen for successful installs so UI can update
+  window.addEventListener('appinstalled', handleAppInstalled)
+
   // T102: Check storage quota on mount and periodically
   await checkStorage()
   // Check every 5 minutes
@@ -129,6 +158,8 @@ onMounted(async () => {
   // Clean up on unmount
   onUnmounted(() => {
     clearInterval(storageCheckInterval)
+    window.removeEventListener('beforeinstallprompt', handleBeforeInstall)
+    window.removeEventListener('appinstalled', handleAppInstalled)
   })
 })
 
@@ -139,6 +170,24 @@ onUnmounted(() => {
 
 function navigateToSettings() {
   router.push('/settings')
+}
+
+async function installApp() {
+  if (!deferredPrompt.value) return
+  try {
+    await deferredPrompt.value.prompt()
+    // Optionally inspect the user's choice
+    const choice = await deferredPrompt.value.userChoice
+    // If user accepted, mark installed immediately; otherwise clear the prompt
+    if (choice && choice.outcome === 'accepted') {
+      installed.value = true
+    }
+    deferredPrompt.value = null
+    console.log('Install prompt choice:', choice)
+  } catch (e) {
+    console.warn('Install prompt failed or was dismissed', e)
+    deferredPrompt.value = null
+  }
 }
 
 function getStatusColor(): string {
@@ -192,7 +241,7 @@ function getStatusTitle(): string {
 </script>
 
 <template>
-  <div class="h-screen flex flex-col bg-gray-50 overflow-hidden safe-area-inset">
+  <div class="h-screen-mobile flex flex-col bg-gray-50 overflow-hidden safe-area-inset">
     <!-- T119: First-time user welcome dialog -->
     <WelcomeDialog
       v-if="showWelcomeDialog && !isCheckingFirstTime"
@@ -286,6 +335,15 @@ function getStatusTitle(): string {
           <h1 class="text-lg font-bold">SpareTime</h1>
         </div>
 
+        <!-- Install button (shows when browser fires beforeinstallprompt) -->
+        <button
+          v-if="deferredPrompt"
+          @click="installApp"
+          class="ml-2 touch-target px-3 py-1 rounded-lg bg-white/10 text-white hover:bg-white/20"
+          title="Install SpareTime"
+          >
+          Install
+        </button>
         <!-- Sync Status Indicator (show after initialization) -->
         <button
           v-if="syncStore.isInitialized"
@@ -407,7 +465,7 @@ function getStatusTitle(): string {
     </header>
 
     <!-- Main Content - Scrollable area -->
-    <main class="flex-1 overflow-y-auto">
+    <main class="flex-1 overflow-y-auto overscroll-contain">
       <div class="mx-auto max-w-2xl px-2 py-4 sm:px-4 lg:px-6">
         <RouterView />
       </div>

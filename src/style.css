@@ -115,6 +115,12 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Mobile viewport height fix for address bar appearing/disappearing */
+:root {
+  /* Fallback for browsers that don't support CSS custom properties */
+  --vh: 1vh;
+}
+
 /* Safe area padding for notched devices */
 .safe-area-inset {
   /* Use CSS env() with fallbacks so desktop browsers return 0 and don't override
@@ -123,6 +129,12 @@ body {
   padding-right: env(safe-area-inset-right, 0px);
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Mobile-friendly full height that accounts for dynamic browser UI */
+.h-screen-mobile {
+  height: 100vh; /* Fallback for browsers that don't support dvh */
+  height: 100dvh; /* Dynamic viewport height - adjusts for mobile browser UI */
 }
 
 /* Button base styles */

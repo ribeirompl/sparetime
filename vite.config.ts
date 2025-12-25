@@ -19,11 +19,18 @@ import { fileURLToPath, URL } from 'node:url'
  */
 export default defineConfig({
   base: '/sparetime/',
+  // server: {
+  //   host: "0.0.0.0",
+  // },
   plugins: [
     vue(),
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Enable PWA behavior during `npm run dev` for local testing on localhost
+      devOptions: {
+        enabled: true
+      },
       includeAssets: ['icons/*.png', 'icons/*.svg', 'robots.txt'],
       manifest: {
         name: 'SpareTime Task Copilot',
