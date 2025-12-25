@@ -105,26 +105,34 @@ Ratification: Initial constitution - 2025-12-14
 
 **Core Technologies** (MUST use):
 
-- **JavaScript/TypeScript**: ES2020+ with TypeScript strict mode
-- **IndexedDB**: Via Dexie.js or idb wrapper for ergonomic API
-- **Service Worker**: Workbox for cache strategies and lifecycle management
-- **Web App Manifest**: Complete PWA manifest with all required fields
-- **CSS**: Modern CSS (Grid, Flexbox, Custom Properties) with mobile-first breakpoints
-- **Build Tool**: Vite or similar for fast dev server, HMR, and optimized production builds
+- **JavaScript/TypeScript**: TypeScript 5.9+ with ES2022+ features, strict mode enabled
+- **IndexedDB**: Via Dexie.js 4.x for ergonomic typed API with version migrations
+- **Service Worker**: Vite PWA Plugin 1.x with Workbox for cache strategies (generateSW strategy)
+- **Web App Manifest**: Complete PWA manifest with all required fields (name, icons, theme, display: standalone)
+- **CSS**: Tailwind CSS 4.x with mobile-first breakpoints, custom utilities for touch targets (≥44x44px)
+- **Build Tool**: Vite 7.x for fast dev server, HMR, optimized production builds
 
 **Optional Libraries** (use judiciously):
 
-- **UI Framework**: Vanilla JS preferred; framework only if justified (Preact, Svelte for size, or maybe Vue.js)
-- **State Management**: LocalStorage for preferences; Context/signals if framework used
-- **Google Drive API**: Via `gapi.client` with OAuth 2.0 for backup feature
-- **Testing**: Vitest + Playwright for E2E PWA testing
+- **UI Framework**: Vue 3.5+ (Composition API with `<script setup>`) if complex state/routing needed; otherwise vanilla JS
+- **State Management**: Pinia 3.x for global state (preferred over Options API patterns); Composables for local state
+- **Routing**: Vue Router 4.6+ with hash mode for PWA compatibility
+- **Date Utilities**: date-fns 4.x (tree-shakeable, immutable) over moment.js or day.js
+- **Accessible Components**: Headless UI 1.7+ for Vue 3 (unstyled, accessible primitives)
+- **Google Drive API**: Via `gapi.client` with Google Identity Services for OAuth 2.0
+- **Testing**: Vitest 4.x (unit/integration with jsdom), Playwright 1.57+ (E2E PWA testing with offline scenarios)
 
 **Prohibited**:
 
 - Backend servers or APIs (application must be fully client-side)
 - Large frameworks (React, Angular without extreme justification)
 - jQuery or other legacy libraries
-- Any dependency that breaks offline-first principle
+- Vue 2.x or Options API patterns (use Composition API with `<script setup>`)
+- Vuex (use Pinia 3.x for state management)
+- Class components (use functional composition)
+- Moment.js or Day.js (use date-fns 4.x for tree-shaking)
+- localStorage for sensitive data (use IndexedDB or Web Crypto API)
+- Any dependency that breaks offline-first principle or exceeds bundle budget
 
 ## Development Workflow
 
@@ -133,19 +141,27 @@ Ratification: Initial constitution - 2025-12-14
 1. Spec defines user scenarios with offline/online considerations
 2. Plan includes PWA-specific technical context (manifest changes, SW updates, IndexedDB schema)
 3. Tasks organized by user story; foundational phase includes PWA setup
-4. Implementation: IndexedDB schema → Service Worker caching → UI → Google Drive sync (if applicable)
-5. Testing: Lighthouse audit MUST pass before feature considered complete
+4. Implementation:
+   - IndexedDB schema with Dexie.js typed tables and version migrations
+   - Service Worker via Vite PWA Plugin (generateSW strategy with Workbox)
+   - Vue 3 components using Composition API with `<script setup lang="ts">`
+   - Pinia stores with TypeScript for type-safe state management
+   - Google Drive sync (if applicable) with OAuth via Google Identity Services
+5. Testing: Unit tests (Vitest), E2E tests (Playwright), Lighthouse audit MUST pass before feature considered complete
 
 **Quality Gates**:
 
-- ✅ All Lighthouse categories ≥ 90
-- ✅ Installable on iOS Safari and Android Chrome
-- ✅ Works offline after initial load
-- ✅ IndexedDB schema versioned and tested
-- ✅ No console errors or warnings
-- ✅ Responsive across mobile (320px) to desktop (1920px)
-- ✅ Touch targets accessible and properly sized
-- ✅ Google Drive sync (if implemented) gracefully handles auth failures
+- ✅ All Lighthouse categories ≥ 90 (Performance, Accessibility, Best Practices, SEO, PWA)
+- ✅ Installable on iOS Safari 15+ and Android Chrome 90+
+- ✅ Works offline after initial load (Service Worker caches all critical assets)
+- ✅ IndexedDB schema versioned with Dexie.js migrations tested
+- ✅ TypeScript strict mode with no type errors
+- ✅ No console errors or warnings in production build
+- ✅ Performance budget: target initial JS bundle ~200KB gzipped; CI should **warn** when bundle >200KB. Critical CSS target: ~14KB (use critical CSS extraction).
+- ✅ Performance: FCP <1.5s, LCP <2.5s, TTI <3.5s on 4G throttled
+- ✅ Responsive across mobile (320px) to desktop (1920px) with mobile-first CSS
+- ✅ Touch targets ≥44x44px (WCAG 2.1 Level AAA)
+- ✅ Google Drive sync (if implemented) gracefully handles auth failures and works without blocking offline usage
 
 **Version Control**:
 
