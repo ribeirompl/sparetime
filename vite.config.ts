@@ -18,9 +18,7 @@ import { fileURLToPath, URL } from 'node:url'
  * - Minification with esbuild
  */
 export default defineConfig({
-  server: {
-    host: '0.0.0.0',
-  },
+  base: '/sparetime/',
   plugins: [
     vue(),
     tailwindcss(),
