@@ -15,12 +15,24 @@ const storageWarning = ref<StorageEstimate | null>(null)
 const showStorageWarning = ref(false)
 
 // Install prompt state (for browsers that support the beforeinstallprompt event)
-const deferredPrompt = ref<any | null>(null)
+// Strongly-typed representation of the install prompt event
+type InstallPromptEvent = Event & {
+  prompt: () => Promise<void>
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
+}
+const deferredPrompt = ref<InstallPromptEvent | null>(null)
 const installed = ref(false)
 
 // Handlers kept as top-level refs so we can add/remove them reliably
-const handleBeforeInstall = (e: any) => {
-  e.preventDefault()
+const handleBeforeInstall = (evt: Event) => {
+  const e = evt as InstallPromptEvent
+  // Some browsers may not implement preventDefault on this Event type,
+  // but keep behavior defensive.
+  try {
+    ;(e as Event & { preventDefault?: () => void }).preventDefault?.()
+  } catch {
+    // ignore
+  }
   deferredPrompt.value = e
 }
 const handleAppInstalled = () => {
@@ -140,8 +152,9 @@ onMounted(async () => {
     if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
       installed.value = true
     }
-    if ((navigator as any).standalone === true) installed.value = true
-  } catch (e) {
+    const nav = navigator as unknown as { standalone?: boolean }
+    if (nav.standalone === true) installed.value = true
+  } catch {
     // ignore
   }
 
