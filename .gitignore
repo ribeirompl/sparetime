@@ -4,6 +4,7 @@ node_modules/
 # Build outputs
 dist/
 build/
+dev-dist/
 
 # Generated icons (built from icon.svg)
 public/icons/icon-192.png
