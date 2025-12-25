@@ -1,0 +1,66 @@
+# Dependabot configuration
+# Automatically checks for outdated dependencies and creates PRs
+
+version: 2
+updates:
+  # npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "ribeirompl"
+    labels:
+      - "dependencies"
+      - "npm"
+    groups:
+      # Group Vue-related updates together
+      vue:
+        patterns:
+          - "vue*"
+          - "@vue/*"
+          - "pinia"
+          - "@headlessui/vue"
+      # Group testing tools together
+      testing:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
+          - "playwright"
+          - "@playwright/*"
+          - "@vue/test-utils"
+      # Group build tools together
+      build:
+        patterns:
+          - "vite"
+          - "@vitejs/*"
+          - "typescript"
+          - "vue-tsc"
+          - "tailwindcss"
+          - "@tailwindcss/*"
+      # Group linting tools together
+      linting:
+        patterns:
+          - "eslint*"
+          - "@typescript-eslint/*"
+          - "prettier"
+    ignore:
+      # Ignore major version updates for core dependencies (manual review)
+      - dependency-name: "vue"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "vite"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+
+  # GitHub Actions dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "github-actions"
