@@ -127,7 +127,7 @@ async function confirmDelete(): Promise<void> {
 
   try {
     const taskCount = taskStore.tasks.length
-    
+
     switch (deleteTarget.value) {
       case 'local':
         // Delete local data only, preserve cloud backup
@@ -307,6 +307,16 @@ async function confirmDelete(): Promise<void> {
           </template>
         </div>
       </section>
+
+      <!-- About & Legal Links -->
+      <section class="settings-section rounded-lg bg-white border border-gray-200 p-4">
+        <h3 class="text-base font-semibold text-gray-900 mb-3">About & Legal</h3>
+        <div class="flex flex-col gap-2 text-sm">
+          <a href="/about.html" class="text-primary-600 hover:underline">About SpareTime</a>
+          <a href="/privacy.html" class="text-primary-600 hover:underline">Privacy Policy</a>
+          <a href="/terms.html" class="text-primary-600 hover:underline">Terms of Service</a>
+        </div>
+      </section>
     </div>
 
     <!-- Delete Confirmation Dialog -->
@@ -315,7 +325,7 @@ async function confirmDelete(): Promise<void> {
         <div v-if="showDeleteDialog" class="modal-overlay" @click.self="cancelDelete">
           <div class="modal-content">
             <h3 class="text-lg font-semibold text-gray-900 mb-2">Confirm Deletion</h3>
-            
+
             <p class="text-sm text-gray-600 mb-4">
               {{ getDeleteConfirmMessage() }}
             </p>
