@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://ribeirompl.github.io/sparetime">
+  <a href="https://sparetime.ribeirompl.com">
     <img src="public/icons/icon.svg" alt="SpareTime logo" width="96" />
   </a>
 </p>
@@ -8,7 +8,7 @@
 
 SpareTime helps you get more done in short pockets of time. It suggests a few quick, prioritized tasks you can finish with the time you have, helps organize chores and projects, and keeps your data available even when you're offline. You can install it on your phone or desktop for an app-like experience.
 
-You can use it here: https://ribeirompl.github.io/sparetime
+You can use it here: https://sparetime.ribeirompl.com
 
 ## Features
 
@@ -34,7 +34,7 @@ You can use it here: https://ribeirompl.github.io/sparetime
 
 ## Developer Quick Start
 
-This section is for developers and contributors who want to run or build the project locally. If you just want to use the app, use https://ribeirompl.github.io/sparetime.
+This section is for developers and contributors who want to run or build the project locally. If you just want to use the app, use https://sparetime.ribeirompl.com.
 
 ### Prerequisites
 

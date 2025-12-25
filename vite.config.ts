@@ -18,7 +18,6 @@ import { fileURLToPath, URL } from 'node:url'
  * - Minification with esbuild
  */
 export default defineConfig({
-  base: '/sparetime/',
   // server: {
   //   host: "0.0.0.0",
   // },
